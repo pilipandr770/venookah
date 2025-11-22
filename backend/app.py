@@ -3,7 +3,6 @@
 import logging
 import os
 
-from sqlalchemy.dialects.postgresql import psycopg
 from flask import Flask, jsonify
 from dotenv import load_dotenv
 
