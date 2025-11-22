@@ -16,7 +16,12 @@ bp = Blueprint("webhooks", __name__, url_prefix="/webhooks")
 def stripe_webhook():
     payload = request.get_data(as_text=True)
     sig_header = request.headers.get("stripe-signature")
-    current_app.logger.info("Received Stripe webhook")
+    current_app.logger.info("Received Stripe webhook; payload_size=%s", len(payload))
+    # For debugging: log a short preview of the payload
+    try:
+        current_app.logger.debug("Stripe payload preview: %s", payload[:1000])
+    except Exception:
+        current_app.logger.debug("Stripe payload preview: <unavailable>")
 
     try:
         if current_app.config.get("APP_ENV") == "development":
@@ -39,10 +44,20 @@ def stripe_webhook():
 
     if event_type == "payment_intent.succeeded":
         payment_intent = event["data"]["object"]
-        handle_payment_intent_succeeded(payment_intent)
+        current_app.logger.info("Handling payment_intent.succeeded id=%s", payment_intent.get("id"))
+        try:
+            handle_payment_intent_succeeded(payment_intent)
+        except Exception as e:
+            current_app.logger.exception("Error handling payment_intent.succeeded: %s", e)
+            return jsonify({"error": "internal"}), 500
     elif event_type == "checkout.session.completed":
         session = event["data"]["object"]
-        handle_checkout_session_completed(session)
+        current_app.logger.info("Handling checkout.session.completed id=%s", session.get("id"))
+        try:
+            handle_checkout_session_completed(session)
+        except Exception as e:
+            current_app.logger.exception("Error handling checkout.session.completed: %s", e)
+            return jsonify({"error": "internal"}), 500
     else:
         current_app.logger.info("Unhandled Stripe event type: %s", event_type)
 
@@ -53,6 +68,8 @@ def handle_checkout_session_completed(session):
     # Find the payment by session_id
     current_app.logger.info("handle_checkout_session_completed for session id=%s", session.get("id"))
 
+    # Helpful debug logging
+    current_app.logger.debug("Looking up Payment by provider_session_id=%s", session.get("id"))
     payment = Payment.query.filter_by(provider_session_id=session.get("id")).first()
 
     # Fallback: some sessions include a payment_intent id, try to find payment by that
@@ -64,6 +81,9 @@ def handle_checkout_session_completed(session):
 
     if not payment:
         current_app.logger.warning("No Payment record found for session: %s", session.get("id"))
+        # Try to log any payments recently created for insight
+        recent = Payment.query.order_by(Payment.created_at.desc()).limit(5).all()
+        current_app.logger.debug("Recent payments: %s", [p.id for p in recent])
         return
 
     # Update payment status
@@ -75,9 +95,11 @@ def handle_checkout_session_completed(session):
     order = payment.order
     order.status = OrderStatus.PAID
     db.session.commit()
-
     # Prepare shipment
-    prepare_shipment(order.id)
+    try:
+        prepare_shipment(order.id)
+    except Exception as e:
+        current_app.logger.exception("prepare_shipment failed for order %s: %s", order.id, e)
 
 
 def handle_payment_intent_succeeded(payment_intent):
