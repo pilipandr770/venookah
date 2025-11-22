@@ -19,7 +19,7 @@ class Company(db.Model):
     postal_code = db.Column(db.String(32), nullable=True)
 
     # зв'язок із користувачем (B2B)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("venookah2.users.id"), nullable=True)
     user = db.relationship("User", backref="company")
 
     extra = db.Column(db.JSON, nullable=True)
@@ -37,7 +37,7 @@ class Contact(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"), nullable=True)
+    company_id = db.Column(db.Integer, db.ForeignKey("venookah2.companies.id"), nullable=True)
     company = db.relationship("Company", backref="contacts")
 
     name = db.Column(db.String(255), nullable=True)

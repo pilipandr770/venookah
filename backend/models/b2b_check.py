@@ -15,7 +15,7 @@ class B2BCheckResult(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("venookah2.users.id"), nullable=False)
     user = db.relationship("User", backref="b2b_checks")
 
     vat_number = db.Column(db.String(64), nullable=True)

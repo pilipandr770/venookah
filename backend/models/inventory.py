@@ -15,7 +15,7 @@ class StockItem(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("venookah2.products.id"), nullable=False)
     product = db.relationship("Product", backref="stock_items")
 
     # загальний залишок по цьому складу

@@ -16,7 +16,7 @@ class AuditLog(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("venookah2.users.id"), nullable=True)
     user = db.relationship("User", backref="audit_logs")
 
     action = db.Column(db.String(255), nullable=False)
