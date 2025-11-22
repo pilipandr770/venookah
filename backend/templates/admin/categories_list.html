@@ -1,0 +1,45 @@
+<!-- file: backend/templates/admin/categories_list.html -->
+{% extends "base.html" %}
+
+{% block title %}Категорії — Адмінка{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="mb-0">Категорії</h1>
+  <a href="{{ url_for('admin.category_create') }}" class="btn btn-primary">+ Нова категорія</a>
+</div>
+
+{% if categories %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Назва</th>
+          <th>Slug</th>
+          <th>Батьківська</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in categories %}
+          <tr>
+            <td>{{ c.id }}</td>
+            <td>{{ c.name }}</td>
+            <td>{{ c.slug }}</td>
+            <td>{{ c.parent.name if c.parent else '—' }}</td>
+            <td class="text-end">
+              <a href="{{ url_for('admin.category_edit', category_id=c.id) }}" class="btn btn-sm btn-outline-secondary">Редагувати</a>
+              <form action="{{ url_for('admin.category_delete', category_id=c.id) }}" method="post" class="d-inline" onsubmit="return confirm('Видалити категорію?');">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p>Категорій поки немає.</p>
+{% endif %}
+{% endblock %}

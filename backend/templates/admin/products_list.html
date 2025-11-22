@@ -1,0 +1,55 @@
+<!-- file: backend/templates/admin/products_list.html -->
+{% extends "base.html" %}
+
+{% block title %}Товари — Адмінка{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="mb-0">Товари</h1>
+  <a href="{{ url_for('admin.product_create') }}" class="btn btn-primary">+ Новий товар</a>
+</div>
+
+{% if products %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Назва</th>
+          <th>Категорія</th>
+          <th>B2C</th>
+          <th>B2B</th>
+          <th>Активний</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+          <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.name }}</td>
+            <td>{{ p.category.name if p.category else '—' }}</td>
+            <td>{{ p.price_b2c }} {{ p.currency }}</td>
+            <td>{{ p.price_b2b }} {{ p.currency }}</td>
+            <td>
+              {% if p.is_active %}
+                <span class="badge bg-success">так</span>
+              {% else %}
+                <span class="badge bg-secondary">ні</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{{ url_for('admin.product_edit', product_id=p.id) }}" class="btn btn-sm btn-outline-secondary">Редагувати</a>
+              <form action="{{ url_for('admin.product_delete', product_id=p.id) }}" method="post" class="d-inline" onsubmit="return confirm('Видалити товар?');">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p>Товарів поки немає.</p>
+{% endif %}
+{% endblock %}

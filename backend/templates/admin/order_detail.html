@@ -1,0 +1,67 @@
+<!-- file: backend/templates/admin/order_detail.html -->
+{% extends "base.html" %}
+
+{% block title %}Замовлення #{{ order.id }} — Адмінка{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">Замовлення #{{ order.id }}</h1>
+
+<div class="mb-3">
+  <strong>Користувач:</strong> {{ order.user.email }}<br>
+  <strong>Статус:</strong> {{ order.status }}<br>
+  <strong>Сума:</strong> {{ order.total_amount }} {{ order.currency }}<br>
+  <strong>B2B:</strong> {% if order.is_b2b %}так{% else %}ні{% endif %}<br>
+  <strong>Створено:</strong> {{ order.created_at }}
+</div>
+
+<h4>Позиції</h4>
+{% if order.items %}
+  <ul class="list-group mb-3">
+    {% for item in order.items %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <div>{{ item.product.name }}</div>
+          <small class="text-muted">ID: {{ item.product_id }}</small>
+        </div>
+        <div class="text-end">
+          <div>{{ item.quantity }} x {{ item.unit_price }} {{ item.currency }}</div>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Позицій немає.</p>
+{% endif %}
+
+<h4>Платежі</h4>
+{% if payments %}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Провайдер</th>
+          <th>Статус</th>
+          <th>Сума</th>
+          <th>Дата</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in payments %}
+          <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.provider }}</td>
+            <td>{{ p.status }}</td>
+            <td>{{ p.amount }} {{ p.currency }}</td>
+            <td>{{ p.created_at }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p>Платежів поки немає.</p>
+{% endif %}
+
+<a href="{{ url_for('admin.orders_list') }}" class="btn btn-secondary mt-3">Назад до списку</a>
+{% endblock %}

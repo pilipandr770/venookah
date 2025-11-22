@@ -1,0 +1,71 @@
+<!-- file: backend/templates/admin/users_list.html -->
+{% extends "base.html" %}
+
+{% block title %}Користувачі{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">Користувачі</h1>
+
+{% if users %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Email</th>
+          <th>Ім'я</th>
+          <th>Компанія</th>
+          <th>Тип</th>
+          <th>Роль</th>
+          <th>Статус</th>
+          <th>Створено</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+          <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.first_name }} {{ u.last_name }}</td>
+            <td>{{ u.company_name or '—' }}</td>
+            <td>
+              {% if u.is_b2b %}
+                <span class="badge bg-primary">B2B</span>
+              {% else %}
+                <span class="badge bg-secondary">B2C</span>
+              {% endif %}
+            </td>
+            <td>{{ u.role.value if u.role else 'N/A' }}</td>
+            <td>
+              {% if u.is_active %}
+                <span class="badge bg-success">Активний</span>
+              {% else %}
+                <span class="badge bg-danger">Неактивний</span>
+              {% endif %}
+            </td>
+            <td>{{ u.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td class="text-end">
+              {% if current_user.role == 'superadmin' %}
+                <form method="post" action="{{ url_for('admin.change_user_role', user_id=u.id) }}" style="display:inline;">
+                  <select name="role" class="form-select form-select-sm d-inline-block" style="width: auto;">
+                    <option value="b2c" {% if u.role == 'b2c' %}selected{% endif %}>B2C</option>
+                    <option value="b2b" {% if u.role == 'b2b' %}selected{% endif %}>B2B</option>
+                    <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Admin</option>
+                    <option value="warehouse_admin" {% if u.role == 'warehouse_admin' %}selected{% endif %}>Warehouse Admin</option>
+                    <option value="superadmin" {% if u.role == 'superadmin' %}selected{% endif %}>Superadmin</option>
+                  </select>
+                  <button type="submit" class="btn btn-sm btn-primary">Change</button>
+                </form>
+              {% endif %}
+              <a href="{{ url_for('admin.user_detail', user_id=u.id) }}" class="btn btn-sm btn-outline-secondary">Відкрити</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p>Користувачів поки немає.</p>
+{% endif %}
+{% endblock %}

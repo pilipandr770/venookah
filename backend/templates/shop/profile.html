@@ -1,0 +1,91 @@
+<!-- file: backend/templates/shop/profile.html -->
+{% extends "base.html" %}
+
+{% block title %}Мой профиль — Venookah 2.0{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Мой профиль</h1>
+
+<div class="row">
+  <div class="col-md-6">
+    <h3>Информация о пользователе</h3>
+    <p><strong>Email:</strong> {{ current_user.email }}</p>
+    <p><strong>Имя:</strong> {{ current_user.first_name or '—' }} {{ current_user.last_name or '—' }}</p>
+    <p><strong>Компания:</strong> {{ current_user.company_name or '—' }}</p>
+    <p><strong>Тип аккаунта:</strong> {% if current_user.is_b2b %}B2B{% else %}B2C{% endif %}</p>
+  </div>
+</div>
+
+<h3 class="mt-4">Мои заказы</h3>
+{% if orders %}
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Статус</th>
+          <th>Сумма</th>
+          <th>Дата</th>
+          <th>Доставка</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td>{{ order.id }}</td>
+            <td>
+              {% if order.status == 'new' %}
+                <span class="badge bg-secondary">Нове</span>
+              {% elif order.status == 'paid' %}
+                <span class="badge bg-success">Оплачене</span>
+              {% elif order.status == 'processing' %}
+                <span class="badge bg-warning">Обробка</span>
+              {% elif order.status == 'shipped' %}
+                <span class="badge bg-info">Відправлено</span>
+              {% elif order.status == 'completed' %}
+                <span class="badge bg-success">Завершене</span>
+              {% else %}
+                <span class="badge bg-danger">{{ order.status }}</span>
+              {% endif %}
+            </td>
+            <td>{{ order.total_amount }} {{ order.currency }}</td>
+            <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>
+              {% if order.status == 'paid' %}
+                <a href="{{ url_for('shop_public.test_webhook', order_id=order.id) }}" class="btn btn-sm btn-primary">Симулировать webhook</a>
+              {% endif %}
+              {% if order.shipments %}
+                {% for shipment in order.shipments %}
+                  <div>
+                    <strong>{{ shipment.provider.upper() }}:</strong> {{ shipment.tracking_number }}<br>
+                    <small>Статус: 
+                      {% if shipment.status == 'created' %}
+                        <span class="badge bg-secondary">Создано</span>
+                      {% elif shipment.status == 'assembling' %}
+                        <span class="badge bg-warning">Сборка</span>
+                      {% elif shipment.status == 'packing' %}
+                        <span class="badge bg-info">Упаковка</span>
+                      {% elif shipment.status == 'shipped' %}
+                        <span class="badge bg-success">Отправлено</span>
+                      {% else %}
+                        <span class="badge bg-light">{{ shipment.status }}</span>
+                      {% endif %}
+                    </small>
+                    {% if shipment.eta %}
+                      <br><small>ETA: {{ shipment.eta.strftime('%Y-%m-%d') }}</small>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              {% else %}
+                Не відправлено
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p>У вас пока нет заказов.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,24 @@
+<!-- file: backend/templates/warehouse/edit_category.html -->
+
+{% extends "base.html" %}
+
+{% block title %}Edit Category{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Edit Category</h1>
+    <a href="/warehouse/categories" class="btn btn-secondary mb-3">Back to Categories</a>
+
+    <form method="post">
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{ category.name }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description">{{ category.description }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+</div>
+{% endblock %}

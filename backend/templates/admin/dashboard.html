@@ -1,0 +1,169 @@
+<!-- file: backend/templates/admin/dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Адмін-панель — Venookah 2.0{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Адмін-панель</h1>
+
+<!-- Управління каталогом -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <h5 class="card-title">Категорії</h5>
+        <p class="card-text">Створювати та редагувати категорії товарів</p>
+        <a href="{{ url_for('admin.categories_list') }}" class="btn btn-primary">Переглянути</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <h5 class="card-title">Товари</h5>
+        <p class="card-text">Додавати та керувати товарами</p>
+        <a href="{{ url_for('admin.products_list') }}" class="btn btn-primary">Переглянути</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <h5 class="card-title">Замовлення</h5>
+        <p class="card-text">Перегляд та обробка замовлень</p>
+        <a href="{{ url_for('admin.orders_list') }}" class="btn btn-primary">Переглянути</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <h5 class="card-title">CRM</h5>
+        <p class="card-text">Керування компаніями та перевірками</p>
+        <a href="{{ url_for('admin.companies_list') }}" class="btn btn-primary">Переглянути</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <h5 class="card-title">Користувачі</h5>
+        <p class="card-text">Перегляд всіх користувачів</p>
+        <a href="{{ url_for('admin.users_list') }}" class="btn btn-primary">Переглянути</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Статистика -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="text-muted">Користувачі</h6>
+        <h3 class="mb-0">{{ users_total }}</h3>
+        <small class="text-muted">B2B: {{ b2b_users }}</small><br>
+        <small class="text-muted">Компаній у CRM: {{ companies_total }}</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="text-muted">Замовлення сьогодні</h6>
+        <h3 class="mb-0">{{ orders_today|length }}</h3>
+        <small class="text-muted">Оновлюється в реальному часі</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="text-muted">Платежі сьогодні</h6>
+        <h3 class="mb-0">{{ payments_today|length }}</h3>
+        <small class="text-muted">Stripe / інші</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="text-muted">Оборот</h6>
+        <p class="mb-1">
+          7 днів: <strong>{{ summary_7d.total_amount }} EUR</strong><br>
+          30 днів: <strong>{{ summary_30d.total_amount }} EUR</strong>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">
+        Топ клієнти
+      </div>
+      <div class="card-body">
+        {% if top_customers %}
+          <ul class="list-group list-group-flush">
+            {% for item in top_customers %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>{{ item.user.email }}</span>
+                <span>{{ item.total }} EUR</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="mb-0 text-muted">Поки що немає даних.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">
+        Останні B2B-перевірки
+      </div>
+      <div class="card-body">
+        {% if last_b2b_checks %}
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr>
+                  <th>Компанія</th>
+                  <th>VAT</th>
+                  <th>Країна</th>
+                  <th>Score</th>
+                  <th>Дата</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in last_b2b_checks %}
+                  <tr>
+                    <td>{{ c.user.company_name or c.user.email }}</td>
+                    <td>{{ c.vat_number }}</td>
+                    <td>{{ c.country }}</td>
+                    <td>{{ c.score }}</td>
+                    <td>{{ c.created_at }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="mb-0 text-muted">B2B-перевірок ще не було.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+<!-- file: backend/templates/warehouse/access_denied.html -->
+
+{% extends "base.html" %}
+
+{% block title %}Access Denied{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Доступ заборонено</h1>
+    <p>У вас немає прав для доступу до складу. Зверніться до адміністратора для отримання ролі warehouse_admin.</p>
+    <a href="{{ url_for('shop_public.index') }}" class="btn btn-primary">Повернутися до магазину</a>
+</div>
+{% endblock %}

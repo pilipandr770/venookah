@@ -1,0 +1,37 @@
+<!-- file: backend/templates/warehouse/categories.html -->
+
+{% extends "base.html" %}
+
+{% block title %}Warehouse Categories{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Warehouse Categories</h1>
+    <a href="/warehouse/" class="btn btn-secondary mb-3">Back to Dashboard</a>
+    <a href="/warehouse/categories/create" class="btn btn-primary mb-3">Create Category</a>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+            <tr>
+                <td>{{ category.name }}</td>
+                <td>{{ category.description or 'N/A' }}</td>
+                <td>
+                    <a href="/warehouse/categories/{{ category.id }}/edit" class="btn btn-warning btn-sm">Edit</a>
+                    <form method="post" action="/warehouse/categories/{{ category.id }}/delete" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+<!-- file: backend/templates/admin/category_form.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — Адмінка{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ title }}</h1>
+
+<form method="post" enctype="multipart/form-data">
+  {{ form.hidden_tag() }}
+
+  <div class="mb-3">
+    {{ form.name.label(class="form-label") }}
+    {{ form.name(class="form-control") }}
+    {% for error in form.name.errors %}
+      <div class="text-danger small">{{ error }}</div>
+    {% endfor %}
+  </div>
+
+  <div class="mb-3">
+    {{ form.slug.label(class="form-label") }}
+    {{ form.slug(class="form-control") }}
+    {% for error in form.slug.errors %}
+      <div class="text-danger small">{{ error }}</div>
+    {% endfor %}
+  </div>
+
+  <div class="mb-3">
+    {{ form.description.label(class="form-label") }}
+    {{ form.description(class="form-control", rows=3) }}
+  </div>
+
+  <div class="mb-3">
+    {{ form.image.label(class="form-label") }}
+    {{ form.image(class="form-control") }}
+    {% for error in form.image.errors %}
+      <div class="text-danger small">{{ error }}</div>
+    {% endfor %}
+  </div>
+
+  <div class="mb-3">
+    {{ form.parent_id.label(class="form-label") }}
+    {{ form.parent_id(class="form-select") }}
+  </div>
+
+  <button type="submit" class="btn btn-success">{{ form.submit.label.text }}</button>
+  <a href="{{ url_for('admin.categories_list') }}" class="btn btn-secondary">Назад</a>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const nameField = document.querySelector('#name');
+  const slugField = document.querySelector('#slug');
+
+  function slugify(text) {
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  nameField.addEventListener('input', function() {
+    if (!slugField.value) {
+      slugField.value = slugify(this.value);
+    }
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,37 @@
+<!-- file: backend/templates/shop/product_detail.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} — Venookah 2.0{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-6">
+    {% if product.main_image_url %}
+      <img src="{{ product.main_image_url }}" class="img-fluid mb-3" alt="{{ product.name }}">
+    {% else %}
+      <div class="bg-secondary rounded mb-3" style="width:100%;height:250px;"></div>
+    {% endif %}
+  </div>
+  <div class="col-md-6">
+    <h1>{{ product.name }}</h1>
+
+    <p class="lead">
+      {{ product.price_b2c }} {{ product.currency }}
+      {% if current_user.is_authenticated and current_user.is_b2b %}
+        <br><small class="text-muted">B2B: {{ product.price_b2b }} {{ product.currency }}</small>
+      {% endif %}
+    </p>
+
+    <p>{{ product.description or "Опис товару буде додано пізніше." }}</p>
+
+    {% if current_user.is_authenticated %}
+      <form method="post" action="{{ url_for('shop_public.add_to_cart', product_id=product.id) }}">
+        <input type="hidden" name="slug" value="{{ product.slug }}">
+        <button type="submit" class="btn btn-success">Додати в кошик</button>
+      </form>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="btn btn-success">Увійдіть, щоб додати в кошик</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+<!-- file: backend/templates/admin/user_detail.html -->
+{% extends "base.html" %}
+
+{% block title %}Користувач {{ user.email }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">Користувач: {{ user.email }}</h1>
+
+<div class="mb-3">
+  <strong>Ім'я:</strong> {{ user.first_name or '—' }}<br>
+  <strong>Прізвище:</strong> {{ user.last_name or '—' }}<br>
+  <strong>Компанія:</strong> {{ user.company_name or '—' }}<br>
+  <strong>VAT:</strong> {{ user.vat_number or '—' }}<br>
+  <strong>Handelsregister:</strong> {{ user.handelsregister or '—' }}<br>
+  <strong>Країна:</strong> {{ user.country or '—' }}<br>
+  <strong>Місто:</strong> {{ user.city or '—' }}<br>
+  <strong>Адреса:</strong> {{ user.address or '—' }}<br>
+  <strong>Індекс:</strong> {{ user.postal_code or '—' }}<br>
+  <strong>Телефон:</strong> {{ user.phone or '—' }}<br>
+  <strong>Тип:</strong> {% if user.is_b2b %}B2B{% else %}B2C{% endif %}<br>
+  <strong>Роль:</strong> {{ user.role }}<br>
+  <strong>Статус:</strong> {% if user.is_active %}Активний{% else %}Неактивний{% endif %}<br>
+  <strong>Створено:</strong> {{ user.created_at.strftime('%Y-%m-%d %H:%M') }}
+</div>
+
+<h4>Останні замовлення</h4>
+{% if orders %}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Статус</th>
+          <th>Сума</th>
+          <th>Дата</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+          <tr>
+            <td>{{ o.id }}</td>
+            <td>{{ o.status }}</td>
+            <td>{{ o.total_amount }} {{ o.currency }}</td>
+            <td>{{ o.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p>Замовлень ще немає.</p>
+{% endif %}
+{% endblock %}

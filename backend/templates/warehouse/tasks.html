@@ -1,0 +1,51 @@
+<!-- file: backend/templates/warehouse/tasks.html -->
+
+{% extends "base.html" %}
+
+{% block title %}Warehouse Tasks{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Warehouse Tasks</h1>
+    <a href="/warehouse/" class="btn btn-secondary mb-3">Back to Dashboard</a>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Order</th>
+                <th>Status</th>
+                <th>Assigned To</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.id }}</td>
+                <td>{{ task.order.id }}</td>
+                <td>{{ task.status }}</td>
+                <td>{{ task.assigned_to if task.assigned_to else 'Unassigned' }}</td>
+                <td>{{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    {% if task.status == 'pending' %}
+                        <form method="post" action="/warehouse/task/{{ task.id }}/start_assembling" style="display:inline;">
+                            <button type="submit" class="btn btn-primary btn-sm">Start Assembling</button>
+                        </form>
+                    {% elif task.status == 'assembling' %}
+                        <form method="post" action="/warehouse/task/{{ task.id }}/pack" style="display:inline;">
+                            <button type="submit" class="btn btn-warning btn-sm">Pack</button>
+                        </form>
+                    {% elif task.status == 'packing' %}
+                        <form method="post" action="/warehouse/task/{{ task.id }}/ship" style="display:inline;">
+                            <button type="submit" class="btn btn-success btn-sm">Ship</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

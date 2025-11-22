@@ -1,0 +1,53 @@
+<!-- file: backend/templates/admin/company_detail.html -->
+{% extends "base.html" %}
+
+{% block title %}Компанія {{ company.name }} — CRM{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">Компанія: {{ company.name }}</h1>
+
+<div class="mb-3">
+  <strong>VAT:</strong> {{ company.vat_number or '—' }}<br>
+  <strong>Країна:</strong> {{ company.country or '—' }}<br>
+  <strong>Місто:</strong> {{ company.city or '—' }}<br>
+  <strong>Адреса:</strong> {{ company.address or '—' }}<br>
+  <strong>Індекс:</strong> {{ company.postal_code or '—' }}<br>
+  <strong>Користувач:</strong> {{ company.user.email if company.user else '—' }}
+</div>
+
+<h4>B2B-перевірки</h4>
+{% if b2b_checks %}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>Дата</th>
+          <th>VAT</th>
+          <th>Країна</th>
+          <th>Valid VAT</th>
+          <th>In Registry</th>
+          <th>Sanctioned</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in b2b_checks %}
+          <tr>
+            <td>{{ r.created_at }}</td>
+            <td>{{ r.vat_number }}</td>
+            <td>{{ r.country }}</td>
+            <td>{% if r.is_valid_vat %}✅{% else %}❌{% endif %}</td>
+            <td>{% if r.is_company_found %}✅{% else %}❌{% endif %}</td>
+            <td>{% if r.is_sanctioned %}⚠️{% else %}✅{% endif %}</td>
+            <td>{{ r.score }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p>B2B-перевірок ще немає.</p>
+{% endif %}
+
+<a href="{{ url_for('admin.companies_list') }}" class="btn btn-secondary mt-3">Назад до списку</a>
+{% endblock %}

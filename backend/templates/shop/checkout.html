@@ -1,0 +1,105 @@
+<!-- file: backend/templates/shop/checkout.html -->
+{% extends "base.html" %}
+
+{% block title %}Оформлення замовлення — Venookah 2.0{% endblock %}
+
+{% block head_extra %}
+<script src="https://js.stripe.com/v3/"></script>
+{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Оформлення замовлення</h1>
+
+{% if client_secret %}
+  <div class="row">
+    <div class="col-md-8">
+      <h3>Товари</h3>
+      {% for item in items %}
+        <div class="d-flex justify-content-between mb-2">
+          <span>{{ item.product.name }} ({{ item.quantity }} шт.)</span>
+          <span>{{ "%.2f"|format(item.quantity * (item.product.price_b2b if current_user.is_b2b else item.product.price_b2c)) }} {{ item.product.currency }}</span>
+        </div>
+      {% endfor %}
+      <hr>
+      <div class="d-flex justify-content-between">
+        <strong>Загальна сума:</strong>
+        <strong>{{ "%.2f"|format(total) }} {{ items[0].product.currency if items else "EUR" }}</strong>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Оплата</h5>
+          <form id="payment-form">
+            <div id="card-element">
+              <!-- A Stripe Element will be inserted here. -->
+            </div>
+            <div id="card-errors" role="alert"></div>
+            <button id="submit" class="btn btn-success w-100 mt-3">Оплатити</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const stripe = Stripe('{{ publishable_key }}');
+    const elements = stripe.elements();
+    const card = elements.create('card');
+    card.mount('#card-element');
+
+    const form = document.getElementById('payment-form');
+    const submitButton = document.getElementById('submit');
+    const errorElement = document.getElementById('card-errors');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      submitButton.disabled = true;
+
+      const { error } = await stripe.confirmCardPayment('{{ client_secret }}', {
+        payment_method: {
+          card: card,
+        }
+      });
+
+      if (error) {
+        errorElement.textContent = error.message;
+        submitButton.disabled = false;
+      } else {
+        window.location.href = '{{ url_for("shop_account.profile") }}';
+      }
+    });
+  </script>
+{% else %}
+  <div class="row">
+    <div class="col-md-8">
+      <h3>Товари</h3>
+      {% for item in items %}
+        <div class="d-flex justify-content-between mb-2">
+          <span>{{ item.product.name }} ({{ item.quantity }} шт.)</span>
+          <span>{{ "%.2f"|format(item.quantity * (item.product.price_b2b if current_user.is_b2b else item.product.price_b2c)) }} {{ item.product.currency }}</span>
+        </div>
+      {% endfor %}
+      <hr>
+      <div class="d-flex justify-content-between">
+        <strong>Загальна сума:</strong>
+        <strong>{{ "%.2f"|format(total) }} {{ items[0].product.currency if items else "EUR" }}</strong>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Дані для доставки</h5>
+          <form method="post">
+            <div class="mb-3">
+              <label for="address" class="form-label">Адреса доставки</label>
+              <textarea name="address" id="address" class="form-control" rows="3" required>{{ current_user.address or "" }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-success w-100">Підтвердити замовлення</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

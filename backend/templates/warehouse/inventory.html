@@ -1,0 +1,40 @@
+<!-- file: backend/templates/warehouse/inventory.html -->
+
+{% extends "base.html" %}
+
+{% block title %}Warehouse Inventory{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Warehouse Inventory</h1>
+    <a href="/warehouse/" class="btn btn-secondary mb-3">Back to Dashboard</a>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>SKU</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Location</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stock in stocks %}
+            <tr>
+                <td>{{ stock.sku }}</td>
+                <td>{{ stock.name }}</td>
+                <td>{{ stock.quantity }}</td>
+                <td>{{ stock.location or 'N/A' }}</td>
+                <td>
+                    <form method="post" action="/warehouse/inventory/{{ stock.id }}/update" style="display:inline;">
+                        <input type="number" name="quantity" value="{{ stock.quantity }}" min="0" class="form-control d-inline-block" style="width: 80px;">
+                        <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

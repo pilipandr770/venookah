@@ -1,0 +1,63 @@
+<!-- file: backend/templates/shop/cart.html -->
+{% extends "base.html" %}
+
+{% block title %}Кошик — Venookah 2.0{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Кошик</h1>
+
+{% if items %}
+  <div class="row">
+    <div class="col-md-8">
+      {% for item in items %}
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-2">
+                {% if item.product.main_image_url %}
+                  <img src="{{ item.product.main_image_url }}" class="img-fluid" alt="{{ item.product.name }}">
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <h5 class="card-title">{{ item.product.name }}</h5>
+                <p class="card-text">{{ item.product.description or "" }}</p>
+                <p class="fw-bold">
+                  {% if current_user.is_b2b %}
+                    {{ item.product.price_b2b }} {{ item.product.currency }}
+                  {% else %}
+                    {{ item.product.price_b2c }} {{ item.product.currency }}
+                  {% endif %}
+                  за шт.
+                </p>
+              </div>
+              <div class="col-md-4">
+                <form method="post" action="{{ url_for('shop_public.update_cart_item', item_id=item.id) }}" class="d-inline">
+                  <div class="input-group mb-2">
+                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control" style="width: 80px;">
+                    <button type="submit" class="btn btn-outline-secondary">Оновити</button>
+                  </div>
+                </form>
+                <form method="post" action="{{ url_for('shop_public.remove_from_cart', item_id=item.id) }}" class="d-inline">
+                  <button type="submit" class="btn btn-outline-danger">Видалити</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Підсумок</h5>
+          <p class="fw-bold">Загальна сума: {{ "%.2f"|format(total) }} {{ items[0].product.currency if items else "EUR" }}</p>
+          <a href="{{ url_for('shop_public.checkout') }}" class="btn btn-primary w-100">Оформити замовлення</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <p>Кошик порожній.</p>
+  <a href="{{ url_for('shop_public.index') }}" class="btn btn-primary">Перейти до покупок</a>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,67 @@
+<!-- file: backend/templates/warehouse/dashboard.html -->
+
+{% extends "base.html" %}
+
+{% block title %}Warehouse Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Warehouse Dashboard</h1>
+    <div class="mb-3">
+        <a href="{{ url_for('warehouse.tasks') }}" class="btn btn-info">Tasks</a>
+        <a href="{{ url_for('warehouse.products') }}" class="btn btn-success">Products</a>
+        <a href="{{ url_for('warehouse.categories') }}" class="btn btn-warning">Categories</a>
+        <a href="{{ url_for('warehouse.inventory') }}" class="btn btn-primary">Inventory</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Recent Tasks</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Order</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr>
+                        <td>{{ task.id }}</td>
+                        <td>{{ task.order.id }}</td>
+                        <td>{{ task.status }}</td>
+                        <td>{{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            {% if task.status == 'pending' %}
+                                <form method="post" action="/warehouse/task/{{ task.id }}/start_assembling" style="display:inline;">
+                                    <button type="submit" class="btn btn-primary btn-sm">Start Assembling</button>
+                                </form>
+                            {% elif task.status == 'assembling' %}
+                                <form method="post" action="/warehouse/task/{{ task.id }}/pack" style="display:inline;">
+                                    <button type="submit" class="btn btn-warning btn-sm">Pack</button>
+                                </form>
+                            {% elif task.status == 'packing' %}
+                                <form method="post" action="/warehouse/task/{{ task.id }}/ship" style="display:inline;">
+                                    <button type="submit" class="btn btn-success btn-sm">Ship</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <h2>Low Stock Alerts</h2>
+            <ul class="list-group">
+                {% for stock in low_stock %}
+                <li class="list-group-item">{{ stock.name }} (SKU: {{ stock.sku }}): {{ stock.quantity }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+<!-- file: backend/templates/admin/b2b_checks_list.html -->
+{% extends "base.html" %}
+
+{% block title %}B2B-перевірки — CRM{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">Останні B2B-перевірки</h1>
+
+{% if checks %}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Користувач</th>
+          <th>Компанія</th>
+          <th>VAT</th>
+          <th>Країна</th>
+          <th>Valid VAT</th>
+          <th>In Registry</th>
+          <th>Sanctioned</th>
+          <th>Score</th>
+          <th>Дата</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in checks %}
+          <tr>
+            <td>{{ r.id }}</td>
+            <td>{{ r.user.email }}</td>
+            <td>{{ r.user.company_name or '—' }}</td>
+            <td>{{ r.vat_number }}</td>
+            <td>{{ r.country }}</td>
+            <td>{% if r.is_valid_vat %}✅{% else %}❌{% endif %}</td>
+            <td>{% if r.is_company_found %}✅{% else %}❌{% endif %}</td>
+            <td>{% if r.is_sanctioned %}⚠️{% else %}❌{% endif %}</td>
+            <td>{{ r.score }}</td>
+            <td>{{ r.created_at }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p>Ще немає перевірок.</p>
+{% endif %}
+{% endblock %}
