@@ -11,6 +11,7 @@ from ...models.inventory import StockItem
 from ...models.order import Order, OrderStatus
 from ...services.shipping.shipping_service import create_shipment_for_order
 from flask import current_app, jsonify
+from flask import url_for, flash
 
 
 def warehouse_required(view_func):
@@ -68,6 +69,55 @@ def tasks_debug():
             'created_at': t.created_at.isoformat() if t.created_at else None,
         }
     return jsonify([t_dict(t) for t in tasks])
+
+
+@bp.route('/orders')
+@warehouse_required
+def orders():
+    # Show recent orders relevant for warehouse (paid or processing)
+    orders = Order.query.filter(Order.status.in_([OrderStatus.PAID, OrderStatus.PROCESSING])).order_by(Order.created_at.desc()).limit(100).all()
+    return render_template('warehouse/orders.html', orders=orders)
+
+
+@bp.route('/orders/<int:order_id>/create_task', methods=['POST'])
+@warehouse_required
+def create_task_from_order(order_id):
+    order = Order.query.get_or_404(order_id)
+    # Only create for paid or processing orders
+    if order.status not in (OrderStatus.PAID, OrderStatus.PROCESSING):
+        flash('Task can be created only for paid or processing orders.', 'warning')
+        return redirect(url_for('warehouse.orders'))
+
+    existing = WarehouseTask.query.filter_by(order_id=order.id).first()
+    if existing:
+        flash('Task already exists for this order.', 'info')
+        return redirect(url_for('warehouse.orders'))
+
+    task = WarehouseTask(order_id=order.id, status=WarehouseTaskStatus.PENDING)
+    db.session.add(task)
+    db.session.commit()
+    flash('Warehouse task created.', 'success')
+    return redirect(url_for('warehouse.tasks'))
+
+
+@bp.route('/orders/import_tasks', methods=['POST'])
+@warehouse_required
+def import_tasks_from_orders():
+    # Create tasks for all paid orders that don't yet have a warehouse task
+    candidates = Order.query.filter(Order.status == OrderStatus.PAID).all()
+    created = 0
+    for o in candidates:
+        if not WarehouseTask.query.filter_by(order_id=o.id).first():
+            t = WarehouseTask(order_id=o.id, status=WarehouseTaskStatus.PENDING)
+            db.session.add(t)
+            created += 1
+
+    if created > 0:
+        db.session.commit()
+        flash(f'Created {created} warehouse tasks.', 'success')
+    else:
+        flash('No new tasks were created.', 'info')
+    return redirect(url_for('warehouse.tasks'))
 
 
 @bp.route("/task/<int:task_id>/start_assembling", methods=["POST"])

@@ -3,6 +3,9 @@
 from datetime import datetime
 
 from ..extensions import db
+from sqlalchemy import inspect
+
+
 
 
 class OrderStatus:
@@ -91,3 +94,24 @@ class CartItem(db.Model):
     updated_at = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
+
+
+# Listen for status changes to automatically prepare shipment when order becomes PAID
+def _after_order_update(mapper, connection, target):
+    try:
+        hist = inspect(target).attrs.status.history
+        # If status changed and new value is PAID
+        if hist.has_changes() and hist.added and list(hist.added)[-1] == OrderStatus.PAID:
+            # Import here to avoid circular imports at module import time
+            from ..services.prepare_shipment import prepare_shipment
+
+            # Call preparation (it will check order status and create task)
+            prepare_shipment(target.id)
+    except Exception:
+        import logging
+
+        logging.getLogger(__name__).exception("Error in order after_update listener")
+
+
+from sqlalchemy import event
+event.listen(Order, 'after_update', _after_order_update)

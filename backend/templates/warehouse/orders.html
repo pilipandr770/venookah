@@ -1,0 +1,51 @@
+<!-- file: backend/templates/warehouse/orders.html -->
+
+{% extends "base.html" %}
+
+{% block title %}Warehouse Orders{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Warehouse Orders</h1>
+    <div class="mb-3">
+        <a href="{{ url_for('warehouse.dashboard') }}" class="btn btn-secondary mb-3">Back to Dashboard</a>
+        <form method="post" action="{{ url_for('warehouse.import_tasks_from_orders') }}" style="display:inline;">
+            <button type="submit" class="btn btn-outline-primary">Import tasks for all paid orders</button>
+        </form>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Items</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.status }}</td>
+                <td>{{ order.total_amount }} {{ order.currency }}</td>
+                <td>{{ order.items|length }}</td>
+                <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    {% set has_task = order.warehouse_tasks|length > 0 %}
+                    {% if not has_task %}
+                    <form method="post" action="{{ url_for('warehouse.create_task_from_order', order_id=order.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-primary">Create Task</button>
+                    </form>
+                    {% else %}
+                        <span class="text-success">Task exists</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
