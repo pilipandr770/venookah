@@ -190,29 +190,22 @@ def checkout():
 @bp.route("/test_webhook/<int:order_id>")
 @login_required
 def test_webhook(order_id):
+    """Endpoint to simulate a successful payment webhook for testing.
+
+    Marks the order as PAID, commits, then calls `prepare_shipment` so warehouse
+    tasks and shipments are created during testing.
+    """
     from ...services.prepare_shipment import prepare_shipment
+
+    order = Order.query.get(order_id)
+    if not order:
+        flash("Order not found.", "warning")
+        return redirect(url_for('shop_public.profile'))
+
+    # Mark order as paid for testing and commit so prepare_shipment proceeds
+    order.status = OrderStatus.PAID
+    db.session.commit()
+
     prepare_shipment(order_id)
-    flash("Webhook simulated", "info")
+    flash("Webhook simulated: order marked PAID and shipment prepared.", "info")
     return redirect(url_for('shop_public.profile'))
-
-    try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, current_app.config['STRIPE_WEBHOOK_SECRET']
-        )
-    except ValueError as e:
-        return 'Invalid payload', 400
-    except stripe.error.SignatureVerificationError as e:
-        return 'Invalid signature', 400
-
-    if event['type'] == 'payment_intent.succeeded':
-        payment_intent = event['data']['object']
-        order_id = payment_intent['metadata']['order_id']
-
-        order = Order.query.get(order_id)
-        if order:
-            order.status = OrderStatus.PAID
-            db.session.commit()
-            # Запустить подготовку shipment
-            prepare_shipment(order.id)
-
-    return '', 200
