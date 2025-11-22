@@ -11,7 +11,7 @@ def _build_sqlalchemy_uri() -> str:
     Формуємо SQLALCHEMY_DATABASE_URI.
 
     - Якщо є DATABASE_URL (наприклад, з Render), використовуємо його.
-    - Якщо URL починається з postgres:// — замінюємо на postgresql+psycopg://
+    - Якщо URL починається з postgres:// — замінюємо на postgresql+psycopg2://
       (класична проблема Render/Heroku).
     - Інакше падаємо назад на локальний SQLite (для аварійного дев-режиму).
     """
@@ -19,7 +19,7 @@ def _build_sqlalchemy_uri() -> str:
     if raw:
         # Fix для формату postgres://
         if raw.startswith("postgres://"):
-            raw = raw.replace("postgres://", "postgresql+psycopg://", 1)
+            raw = raw.replace("postgres://", "postgresql+psycopg2://", 1)
         return raw
 
     # fallback — SQLite локально
