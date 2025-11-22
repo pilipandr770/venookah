@@ -14,7 +14,7 @@ class Category(db.Model):
     slug = db.Column(db.String(255), unique=True, nullable=False)
     description = db.Column(db.Text)
     image = db.Column(db.String(512))  # URL фото категории
-    parent_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey("venookah2.categories.id"), nullable=True)
 
     parent = db.relationship("Category", remote_side=[id], backref="children")
 
