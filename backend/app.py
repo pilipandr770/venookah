@@ -52,12 +52,14 @@ def register_blueprints(app: Flask) -> None:
     from .blueprints.admin import bp as admin_bp
     from .blueprints.shop_account import bp as shop_account_bp
     from .blueprints.warehouse import bp as warehouse_bp
+    from .blueprints.webhooks import bp as webhooks_bp
 
     app.register_blueprint(shop_public_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(shop_account_bp)
     app.register_blueprint(warehouse_bp)
+    app.register_blueprint(webhooks_bp)
 
 
 app = create_app()

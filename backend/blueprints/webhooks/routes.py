@@ -16,6 +16,7 @@ bp = Blueprint("webhooks", __name__, url_prefix="/webhooks")
 def stripe_webhook():
     payload = request.get_data(as_text=True)
     sig_header = request.headers.get("stripe-signature")
+    current_app.logger.info("Received Stripe webhook")
 
     try:
         if current_app.config.get("APP_ENV") == "development":
@@ -32,20 +33,37 @@ def stripe_webhook():
         # Invalid signature
         return jsonify({"error": "Invalid signature"}), 400
 
-    # Handle the event
-    if event["type"] == "payment_intent.succeeded":
+    # Handle the event types we care about
+    event_type = event.get("type")
+    current_app.logger.info("Stripe event received: %s", event_type)
+
+    if event_type == "payment_intent.succeeded":
         payment_intent = event["data"]["object"]
         handle_payment_intent_succeeded(payment_intent)
+    elif event_type == "checkout.session.completed":
+        session = event["data"]["object"]
+        handle_checkout_session_completed(session)
     else:
-        print(f"Unhandled event type {event['type']}")
+        current_app.logger.info("Unhandled Stripe event type: %s", event_type)
 
     return jsonify({"status": "success"}), 200
 
 
 def handle_checkout_session_completed(session):
     # Find the payment by session_id
-    payment = Payment.query.filter_by(provider_session_id=session["id"]).first()
+    current_app.logger.info("handle_checkout_session_completed for session id=%s", session.get("id"))
+
+    payment = Payment.query.filter_by(provider_session_id=session.get("id")).first()
+
+    # Fallback: some sessions include a payment_intent id, try to find payment by that
     if not payment:
+        pi = session.get("payment_intent") or session.get("payment")
+        if pi:
+            current_app.logger.info("No payment by session_id, trying payment_intent=%s", pi)
+            payment = Payment.query.filter_by(provider_payment_id=pi).first()
+
+    if not payment:
+        current_app.logger.warning("No Payment record found for session: %s", session.get("id"))
         return
 
     # Update payment status
@@ -64,8 +82,11 @@ def handle_checkout_session_completed(session):
 
 def handle_payment_intent_succeeded(payment_intent):
     # Find the payment by payment_intent id
-    payment = Payment.query.filter_by(provider_payment_id=payment_intent["id"]).first()
+    current_app.logger.info("handle_payment_intent_succeeded for intent id=%s", payment_intent.get("id"))
+
+    payment = Payment.query.filter_by(provider_payment_id=payment_intent.get("id")).first()
     if not payment:
+        current_app.logger.warning("No Payment record found for payment_intent: %s", payment_intent.get("id"))
         return
 
     # Update payment status
