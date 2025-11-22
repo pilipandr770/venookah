@@ -8,6 +8,7 @@ from .forms import SearchForm
 from .services import get_active_products, get_product_by_slug
 from ...models.product import Category, Product
 from ...models.order import Cart, CartItem, Order, OrderItem, OrderStatus
+from ...models.payment import Payment
 from ...extensions import db
 from ...services.shipping.shipping_service import create_shipment_for_order
 import stripe
