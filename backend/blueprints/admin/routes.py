@@ -8,6 +8,7 @@ from flask import (
     request,
     abort,
     current_app,
+    jsonify,
 )
 from flask_login import current_user, login_required
 import os
@@ -18,6 +19,7 @@ from ...models.user import User, UserRole
 from ...models.product import Category, Product
 from ...models.order import Order
 from ...models.payment import Payment
+from ...models.warehouse import WarehouseTask
 from ...models.crm import Company
 from ...models.b2b_check import B2BCheckResult
 from . import bp
@@ -157,6 +159,49 @@ def products_list():
         .all()
     )
     return render_template("admin/products_list.html", products=products)
+
+
+@bp.route('/debug')
+@admin_required
+def debug_info():
+    """Admin-only debug endpoint returning recent payments, orders and warehouse tasks."""
+    payments = Payment.query.order_by(Payment.created_at.desc()).limit(15).all()
+    orders = Order.query.order_by(Order.created_at.desc()).limit(15).all()
+    tasks = WarehouseTask.query.order_by(WarehouseTask.created_at.desc()).limit(15).all()
+
+    def p_dict(p):
+        return {
+            'id': p.id,
+            'order_id': getattr(p, 'order_id', None),
+            'provider_payment_id': p.provider_payment_id,
+            'provider_session_id': p.provider_session_id,
+            'status': p.status,
+            'created_at': p.created_at.isoformat() if p.created_at else None,
+        }
+
+    def o_dict(o):
+        return {
+            'id': o.id,
+            'status': o.status,
+            'total_amount': float(o.total_amount) if o.total_amount is not None else None,
+            'stripe_payment_intent_id': o.stripe_payment_intent_id,
+            'created_at': o.created_at.isoformat() if o.created_at else None,
+        }
+
+    def t_dict(t):
+        return {
+            'id': t.id,
+            'order_id': t.order_id,
+            'status': t.status,
+            'assigned_to': t.assigned_to,
+            'created_at': t.created_at.isoformat() if t.created_at else None,
+        }
+
+    return jsonify({
+        'payments': [p_dict(p) for p in payments],
+        'orders': [o_dict(o) for o in orders],
+        'tasks': [t_dict(t) for t in tasks],
+    })
 
 
 @bp.route("/products/create", methods=["GET", "POST"])

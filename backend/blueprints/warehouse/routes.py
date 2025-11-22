@@ -10,6 +10,7 @@ from ...models.warehouse import WarehouseTask, WarehouseTaskStatus, WarehouseCat
 from ...models.inventory import StockItem
 from ...models.order import Order, OrderStatus
 from ...services.shipping.shipping_service import create_shipment_for_order
+from flask import current_app, jsonify
 
 
 def warehouse_required(view_func):
@@ -38,6 +39,35 @@ def dashboard():
 def tasks():
     tasks = WarehouseTask.query.order_by(WarehouseTask.created_at.desc()).all()
     return render_template("warehouse/tasks.html", tasks=tasks)
+
+
+@bp.route("/tasks/debug")
+def tasks_debug():
+    """Temporary debug endpoint: returns tasks as JSON.
+
+    Visible if user is logged in with warehouse/admin role OR if a valid token is provided
+    via query parameter `token` matching `ADMIN_DEBUG_TOKEN` in config.
+    """
+    token = request.args.get('token')
+    allowed = False
+    if current_user.is_authenticated and current_user.role in (UserRole.SUPERADMIN, UserRole.WAREHOUSE_ADMIN):
+        allowed = True
+    elif token and token == current_app.config.get('ADMIN_DEBUG_TOKEN'):
+        allowed = True
+
+    if not allowed:
+        return jsonify({'error': 'forbidden'}), 403
+
+    tasks = WarehouseTask.query.order_by(WarehouseTask.created_at.desc()).all()
+    def t_dict(t):
+        return {
+            'id': t.id,
+            'order_id': t.order_id,
+            'status': t.status,
+            'assigned_to': t.assigned_to,
+            'created_at': t.created_at.isoformat() if t.created_at else None,
+        }
+    return jsonify([t_dict(t) for t in tasks])
 
 
 @bp.route("/task/<int:task_id>/start_assembling", methods=["POST"])

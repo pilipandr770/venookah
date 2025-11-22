@@ -1,0 +1,110 @@
+/* Venookah2 — Modern mobile-first responsive stylesheet */
+:root{
+	--bg: #0f1724; /* deep navy */
+	--card: #0b1220;
+	--muted: #94a3b8;
+	--accent: #ff7a59; /* warm coral */
+	--accent-2: #7dd3fc; /* soft cyan */
+	--surface: #0b1220;
+	--text: #e6eef8;
+	--radius: 12px;
+	--container: 1200px;
+}
+
+/* Reset & base */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+	margin:0;
+	font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+	background: linear-gradient(180deg,var(--bg) 0%, #071026 100%);
+	color:var(--text);
+	-webkit-font-smoothing:antialiased;
+	-moz-osx-font-smoothing:grayscale;
+	line-height:1.45;
+}
+
+a{color:var(--accent);text-decoration:none}
+img{max-width:100%;height:auto;display:block}
+
+.container{max-width:var(--container);margin:0 auto;padding:0 16px}
+
+/* Header */
+.site-header{background:transparent;padding:18px 0}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand__logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#071026}
+.brand__title{font-size:1.05rem;font-weight:600}
+
+.nav__links{display:flex;gap:12px;align-items:center}
+.nav__links a{padding:8px 12px;border-radius:10px;color:var(--muted);font-weight:500}
+.nav__links a:hover{color:var(--text);background:rgba(255,255,255,0.02)}
+
+/* Hero / banner */
+.hero{padding:28px 0 20px}
+.hero__inner{display:flex;gap:20px;align-items:center}
+.hero__title{font-size:1.5rem;font-weight:700;margin:0}
+.hero__subtitle{color:var(--muted);margin-top:6px}
+
+/* Product grid */
+.products{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:18px 0}
+.product-card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:12px;border-radius:var(--radius);display:flex;gap:12px;align-items:flex-start}
+.product-card__img{flex:0 0 92px;border-radius:8px;overflow:hidden;background:#071126}
+.product-card__body{flex:1}
+.product-card__title{font-weight:600;margin:0 0 6px}
+.product-card__meta{color:var(--muted);font-size:0.9rem;margin-bottom:8px}
+.price{font-weight:700;color:var(--accent)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:var(--accent);color:#071026;font-weight:700;border:0;cursor:pointer}
+.btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--text);font-weight:600}
+
+/* Cart & checkout */
+.cart{display:grid;grid-template-columns:1fr 320px;gap:18px}
+.cart__panel{background:var(--card);padding:14px;border-radius:12px}
+.cart__items{display:flex;flex-direction:column;gap:10px}
+.cart__total{font-size:1.1rem;font-weight:700}
+
+/* Forms */
+input[type="text"],input[type="email"],textarea,select{width:100%;padding:10px 12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.05);color:var(--text)}
+label{display:block;color:var(--muted);font-size:0.9rem;margin-bottom:6px}
+
+/* Footer */
+.site-footer{padding:28px 0;color:var(--muted);font-size:0.9rem}
+
+/* Utilities */
+.flex{display:flex}
+.gap-sm{gap:8px}
+.text-muted{color:var(--muted)}
+
+/* Responsive */
+@media (min-width:900px){
+	.products{grid-template-columns:repeat(3,1fr)}
+	.hero__title{font-size:2rem}
+}
+
+@media (min-width:1200px){
+	.products{grid-template-columns:repeat(4,1fr)}
+}
+
+@media (max-width:640px){
+	.nav__links{display:none}
+	.products{grid-template-columns:repeat(1,1fr)}
+	.cart{grid-template-columns:1fr}
+	.hero__inner{flex-direction:column;align-items:flex-start}
+	.brand__title{font-size:1rem}
+}
+
+/* small touch-ups for images and placeholders */
+.placeholder{background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:8px}
+
+/* Accessibility focus styles */
+a:focus,button:focus,input:focus{outline:2px solid rgba(125,211,252,0.12);outline-offset:2px}
+
+/* Lightweight animations */
+.fade-in{animation:fadeIn .45s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* Small helpers for admin messages */
+.flash{padding:10px 14px;border-radius:10px;background:rgba(0,0,0,0.25);color:var(--text);margin-bottom:12px}
+
+/* End of stylesheet */
+

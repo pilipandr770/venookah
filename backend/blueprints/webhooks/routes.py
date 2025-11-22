@@ -2,6 +2,8 @@
 
 import json
 import stripe
+import os
+from datetime import datetime
 from flask import Blueprint, request, jsonify, current_app
 
 from ...extensions import db
@@ -17,6 +19,22 @@ def stripe_webhook():
     payload = request.get_data(as_text=True)
     sig_header = request.headers.get("stripe-signature")
     current_app.logger.info("Received Stripe webhook; payload_size=%s", len(payload))
+    # Persist raw webhook payloads to a local log for offline debugging.
+    try:
+        logs_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "logs")
+        logs_dir = os.path.abspath(logs_dir)
+        os.makedirs(logs_dir, exist_ok=True)
+        log_path = os.path.join(logs_dir, "webhook_events.log")
+        with open(log_path, "a", encoding="utf-8") as lf:
+            entry = {
+                "ts": datetime.utcnow().isoformat() + "Z",
+                "endpoint": "/webhooks/stripe",
+                "sig_header": sig_header,
+                "payload_preview": payload[:4096],
+            }
+            lf.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    except Exception:
+        current_app.logger.debug("Failed to write webhook payload to file for debugging")
     # For debugging: log a short preview of the payload
     try:
         current_app.logger.debug("Stripe payload preview: %s", payload[:1000])
