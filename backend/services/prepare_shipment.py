@@ -9,7 +9,7 @@ import logging
 from ..extensions import db
 from ..models.order import Order, OrderStatus
 from ..models.inventory import StockItem
-from ..models.warehouse import WarehouseTask
+from ..models.warehouse import WarehouseTask, WarehouseTaskStatus
 from .shipping.shipping_service import create_shipment_for_order
 
 logger = logging.getLogger(__name__)
@@ -39,16 +39,21 @@ def prepare_shipment(order_id: int):
             logger.warning("Insufficient stock for product_id=%s for order_id=%s", item.product_id, order.id)
 
     # Створити warehouse task
-    task = WarehouseTask(order_id=order.id, status=WarehouseTaskStatus.PENDING)
-    db.session.add(task)
+    try:
+        task = WarehouseTask(order_id=order.id, status=WarehouseTaskStatus.PENDING)
+        db.session.add(task)
 
-    # Оновити статус на processing
-    order.status = OrderStatus.PROCESSING
-    db.session.commit()
-    logger.info("Order %s status updated to PROCESSING and changes committed", order.id)
+        # Оновити статус на processing
+        order.status = OrderStatus.PROCESSING
+        db.session.commit()
+        logger.info("Order %s status updated to PROCESSING and changes committed", order.id)
 
-    # После коммита SQLAlchemy заполняет task.id — логируем для отладки
-    logger.info("Created WarehouseTask id=%s for order_id=%s", getattr(task, 'id', None), order.id)
+        # После коммита SQLAlchemy заполняет task.id — логируем для отладки
+        logger.info("Created WarehouseTask id=%s for order_id=%s", getattr(task, 'id', None), order.id)
+    except Exception as e:
+        logger.exception("Failed to create WarehouseTask for order_id=%s: %s", order.id, e)
+        db.session.rollback()
+        return
 
     # Створити shipment, якщо ще не створено
     if not order.shipments:
