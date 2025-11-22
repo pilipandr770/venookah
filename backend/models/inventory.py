@@ -11,6 +11,7 @@ class StockItem(db.Model):
     """
 
     __tablename__ = "stock_items"
+    __table_args__ = {'schema': 'venookah2'}
 
     id = db.Column(db.Integer, primary_key=True)
 

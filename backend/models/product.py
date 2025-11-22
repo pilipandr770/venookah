@@ -7,6 +7,7 @@ from ..extensions import db
 
 class Category(db.Model):
     __tablename__ = "categories"
+    __table_args__ = {'schema': 'venookah2'}
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
@@ -32,6 +33,7 @@ class Product(db.Model):
     """
 
     __tablename__ = "products"
+    __table_args__ = {'schema': 'venookah2'}
 
     id = db.Column(db.Integer, primary_key=True)
 
