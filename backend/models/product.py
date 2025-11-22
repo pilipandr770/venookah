@@ -41,7 +41,7 @@ class Product(db.Model):
     slug = db.Column(db.String(255), unique=True, nullable=False)
     description = db.Column(db.Text)
 
-    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True)
+    category_id = db.Column(db.Integer, db.ForeignKey("venookah2.categories.id"), nullable=True)
     category = db.relationship("Category", backref="products")
 
     # ціна для B2C та B2B окремо
