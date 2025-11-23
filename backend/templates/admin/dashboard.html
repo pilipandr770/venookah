@@ -31,6 +31,16 @@
   <div class="col-md-3">
     <div class="card h-100">
       <div class="card-body text-center">
+        <h5 class="card-title">AI — системна інструкція</h5>
+        <p class="card-text">Редагувати системну інструкцію для чат-асистента (публичный чат)</p>
+        <a href="{{ url_for('admin.ai_prompt') }}" class="btn btn-primary">Редагувати інструкцію</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body text-center">
         <h5 class="card-title">Замовлення</h5>
         <p class="card-text">Перегляд та обробка замовлень</p>
         <a href="{{ url_for('admin.orders_list') }}" class="btn btn-primary">Переглянути</a>

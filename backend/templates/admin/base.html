@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Адмін — Venookah{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-3">
+    <div class="list-group mb-4">
+      <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action">Панель</a>
+      <a href="{{ url_for('admin.categories_list') }}" class="list-group-item list-group-item-action">Категорії</a>
+      <a href="{{ url_for('admin.products_list') }}" class="list-group-item list-group-item-action">Товари</a>
+      <a href="{{ url_for('admin.orders_list') }}" class="list-group-item list-group-item-action">Замовлення</a>
+      <a href="{{ url_for('admin.companies_list') }}" class="list-group-item list-group-item-action">CRM</a>
+      <a href="{{ url_for('admin.users_list') }}" class="list-group-item list-group-item-action">Користувачі</a>
+      <a href="{{ url_for('admin.ai_prompt') }}" class="list-group-item list-group-item-action">AI — інструкція</a>
+    </div>
+  </div>
+
+  <div class="col-md-9">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-3">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block admin_content %}{% endblock %}
+  </div>
+</div>
+
+{% endblock %}

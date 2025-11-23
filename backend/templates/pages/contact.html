@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Контакт — Venookah{% endblock %}
+
+{% block content %}
+<div class="card mx-auto" style="max-width:900px;">
+  <div class="card-body">
+    <h1>Контакт — чат поддержки</h1>
+    <p>Задайте вопрос — наш чат-ассистент (OpenAI) ответит. Если вы предпочитаете живого оператора, используйте email: <a href="mailto:info@venookah.com">info@venookah.com</a></p>
+
+    <div id="chat" class="border rounded p-3 mb-3" style="height:400px; overflow:auto; background:#0b0b0b; color:#e6ffe6;">
+      <!-- messages appear here -->
+    </div>
+
+    <form id="chatForm" class="d-flex gap-2">
+      <input id="chatInput" class="form-control" placeholder="Напишите сообщение..." autocomplete="off">
+      <button class="btn btn-primary" id="chatSend" type="submit">Отправить</button>
+    </form>
+
+    <p class="text-muted small mt-3">Chat uses OpenAI model configured by the administrator.</p>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const chat = document.getElementById('chat');
+  const form = document.getElementById('chatForm');
+  const input = document.getElementById('chatInput');
+
+  function appendMessage(sender, text){
+    const el = document.createElement('div');
+    el.className = 'mb-2';
+    el.innerHTML = `<strong>${sender}:</strong> <div>${text.replace(/\n/g,'<br>')}</div>`;
+    chat.appendChild(el);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const msg = input.value.trim();
+    if(!msg) return;
+    appendMessage('Вы', msg);
+    input.value = '';
+    appendMessage('Ассистент', '<em>печатает...</em>');
+
+    try{
+      const res = await fetch('{{ url_for('shop_public.chat_api') }}', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({message: msg})
+      });
+      const j = await res.json();
+      // remove 'печатает' placeholder
+      const placeholders = Array.from(chat.querySelectorAll('div')).filter(d => d.innerHTML.includes('печатает'));
+      placeholders.forEach(p=>p.remove());
+      if(j.reply){
+        appendMessage('Ассистент', j.reply);
+      } else if(j.error){
+        appendMessage('Ассистент', '<span class="text-danger">Ошибка: ' + (j.error || j.detail || 'unknown') + '</span>');
+      }
+    }catch(err){
+      appendMessage('Ассистент', '<span class="text-danger">Ошибка связи: '+err.message+'</span>');
+    }
+  });
+});
+</script>
+{% endblock %}

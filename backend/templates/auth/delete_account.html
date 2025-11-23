@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить аккаунт — Venookah{% endblock %}
+
+{% block content %}
+<div class="card mx-auto" style="max-width:720px;">
+  <div class="card-body">
+    <h1 class="h4">Удаление аккаунта</h1>
+    <p class="text-muted">Вы собираетесь удалить свой аккаунт. Это действие деактивирует ваш аккаунт и анонимизирует персональные данные в соответствии с нашей политикой. История заказов и необходимые бухгалтерские записи сохраняются в анонимизированном виде.</p>
+
+    <div class="alert alert-warning">
+      <strong>Внимание:</strong> операция необратима через интерфейс. Если вы хотите полное физическое удаление данных из базы, свяжитесь с поддержкой: <a href="mailto:info@venookah.com">info@venookah.com</a>
+    </div>
+
+    <form method="post" action="{{ url_for('auth.delete_account') }}">
+      <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="confirmDelete" required>
+        <label class="form-check-label" for="confirmDelete">Я подтверждаю, что хочу удалить свой аккаунт и понимаю последствия.</label>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-danger" type="submit">Удалить аккаунт</button>
+        <a href="{{ url_for('shop_public.index') }}" class="btn btn-secondary">Отмена</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

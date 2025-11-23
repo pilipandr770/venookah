@@ -119,6 +119,58 @@ def logout():
     return redirect(url_for("shop_public.index"))
 
 
+@bp.route('/account/delete', methods=['GET'])
+@login_required
+def delete_account_confirm():
+    """Show account deletion confirmation page."""
+    return render_template('auth/delete_account.html')
+
+
+@bp.route('/account/delete', methods=['POST'])
+@login_required
+def delete_account():
+    """Perform a safe account deletion / anonymization and logout the user.
+
+    For legal/data-retention reasons we anonymize personal fields and
+    deactivate the account rather than dropping rows that may be required
+    for order history and accounting.
+    """
+    user = User.query.get(current_user.id)
+    if not user:
+        flash('Пользователь не найден.', 'warning')
+        return redirect(url_for('shop_public.index'))
+
+    # Anonymize personal data
+    safe_email = f'deleted+{user.id}@venookah.local'
+    user.email = safe_email
+    user.first_name = None
+    user.last_name = None
+    user.company_name = None
+    user.vat_number = None
+    user.handelsregister = None
+    user.country = None
+    user.city = None
+    user.address = None
+    user.postal_code = None
+    user.is_active = False
+    user.is_confirmed = False
+    # Remove password and any tokens
+    try:
+        user.password_hash = None
+    except Exception:
+        pass
+
+    # Optionally revoke sessions / tokens here (implementation-specific)
+
+    db.session.add(user)
+    db.session.commit()
+
+    # Log the user out after deletion
+    logout_user()
+    flash('Ваш аккаунт был удалён (анонимизирован). Если вы хотите восстановить данные, свяжитесь с поддержкой.', 'info')
+    return redirect(url_for('shop_public.index'))
+
+
 @bp.route("/bootstrap-superadmin", methods=["GET"])
 def bootstrap_superadmin():
     """

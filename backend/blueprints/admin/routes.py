@@ -25,6 +25,9 @@ from ...models.b2b_check import B2BCheckResult
 from . import bp
 from .forms import CategoryForm, ProductForm, slugify
 from .services import get_admin_dashboard_data
+import requests
+import json
+
 
 
 def save_uploaded_file(file_field, subfolder="uploads"):
@@ -136,6 +139,35 @@ def category_edit(category_id: int):
         return redirect(url_for("admin.categories_list"))
 
     return render_template("admin/category_form.html", form=form, title="Редагувати категорію")
+
+
+def _prompt_file_path():
+    return os.path.join(current_app.root_path, 'data', 'ai_system_prompt.txt')
+
+
+@bp.route('/ai/prompt', methods=['GET', 'POST'])
+@admin_required
+def ai_prompt():
+    """View and edit the system prompt used by the public chat assistant."""
+    os.makedirs(os.path.join(current_app.root_path, 'data'), exist_ok=True)
+    path = _prompt_file_path()
+
+    if request.method == 'POST':
+        prompt = request.form.get('prompt', '')
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(prompt)
+        flash('Системная инструкция обновлена.', 'success')
+        return redirect(url_for('admin.ai_prompt'))
+
+    current_prompt = ''
+    if os.path.exists(path):
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                current_prompt = f.read()
+        except Exception:
+            current_prompt = ''
+
+    return render_template('admin/ai_prompt.html', prompt=current_prompt)
 
 
 @bp.route("/categories/<int:category_id>/delete", methods=["POST"])

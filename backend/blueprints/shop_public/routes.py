@@ -1,6 +1,6 @@
 # file: backend/blueprints/shop_public/routes.py
 
-from flask import render_template, abort, redirect, url_for, flash, request, current_app
+from flask import render_template, abort, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import current_user, login_required
 
 from . import bp
@@ -12,6 +12,8 @@ from ...models.payment import Payment
 from ...extensions import db
 from ...services.shipping.shipping_service import create_shipment_for_order
 import stripe
+import os
+import requests
 from ...services.prepare_shipment import prepare_shipment
 
 
@@ -53,6 +55,96 @@ def product_detail(slug: str):
         abort(404)
 
     return render_template("shop/product_detail.html", product=product)
+
+
+@bp.route('/privacy')
+def privacy_policy():
+    return render_template('pages/privacy.html')
+
+
+@bp.route('/terms')
+def terms_and_conditions():
+    return render_template('pages/terms.html')
+
+
+@bp.route('/impressum')
+def impressum():
+    return render_template('pages/impressum.html')
+
+
+@bp.route('/contact')
+def contact():
+    return render_template('pages/contact.html')
+
+
+@bp.route('/api/chat', methods=['POST'])
+def chat_api():
+    """Simple chat endpoint that forwards user message to OpenAI Chat Completions API.
+
+    Expects JSON: {"message": "..."}
+    Returns JSON: {"reply": "..."}
+    """
+    data = request.get_json(force=True) or {}
+    user_message = data.get('message', '').strip()
+    if not user_message:
+        return jsonify({'error': 'Empty message'}), 400
+
+    # Load system prompt from file (editable by admin)
+    prompt_path = os.path.join(current_app.root_path, 'data', 'ai_system_prompt.txt')
+    if os.path.exists(prompt_path):
+        try:
+            with open(prompt_path, 'r', encoding='utf-8') as f:
+                system_prompt = f.read() or ''
+        except Exception:
+            system_prompt = ''
+    else:
+        system_prompt = ''
+
+    openai_key = current_app.config.get('OPENAI_API_KEY') or os.getenv('OPENAI_API_KEY')
+    model = current_app.config.get('OPENAI_MODEL') or os.getenv('OPENAI_MODEL') or 'gpt-4o-mini'
+
+    if not openai_key:
+        # fall back to internal mock if key not configured
+        return jsonify({'reply': f'[AI mock] {user_message} (no OPENAI_API_KEY)'}), 200
+
+    url = 'https://api.openai.com/v1/chat/completions'
+    headers = {
+        'Authorization': f'Bearer {openai_key}',
+        'Content-Type': 'application/json'
+    }
+
+    messages = []
+    if system_prompt:
+        messages.append({'role': 'system', 'content': system_prompt})
+    messages.append({'role': 'user', 'content': user_message})
+
+    payload = {
+        'model': model,
+        'messages': messages,
+        'temperature': 0.2,
+        'max_tokens': 800,
+    }
+
+    try:
+        resp = requests.post(url, headers=headers, json=payload, timeout=20)
+        resp.raise_for_status()
+        j = resp.json()
+        reply = ''
+        # OpenAI response shape: choices[0].message.content
+        if 'choices' in j and len(j['choices']) > 0:
+            reply = j['choices'][0].get('message', {}).get('content', '')
+        else:
+            reply = j.get('error', {}).get('message', 'No reply')
+
+        return jsonify({'reply': reply})
+    except requests.RequestException as e:
+        current_app.logger.exception('OpenAI request failed')
+        return jsonify({'error': 'OpenAI request failed', 'detail': str(e)}), 500
+
+
+@bp.route('/delivery')
+def delivery():
+    return render_template('pages/delivery.html')
 
 
 @bp.route("/add-to-cart/<int:product_id>", methods=["POST"])

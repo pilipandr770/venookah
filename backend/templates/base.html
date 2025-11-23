@@ -37,6 +37,33 @@
 
     {% include "partials/footer.html" %}
 
+    <!-- Login prompt modal shown to anonymous users when they try to view product details -->
+    <div class="modal fade" id="loginPromptModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Требуется авторизация</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Чтобы посмотреть детали товара и оформить заказ, пожалуйста, войдите в аккаунт или зарегистрируйтесь.</p>
+            <div class="d-flex gap-2">
+              <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Войти</a>
+              <a href="{{ url_for('auth.register') }}" class="btn btn-outline-secondary">Регистрация</a>
+            </div>
+            <hr>
+            <p class="small text-muted mb-0">Или продолжите просмотр — но для покупки потребуется аккаунт.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // expose auth state to front-end
+      window.VENOOKAH = window.VENOOKAH || {};
+      window.VENOOKAH.isAuthenticated = {{ 'true' if current_user.is_authenticated else 'false' }};
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block scripts %}{% endblock %}
