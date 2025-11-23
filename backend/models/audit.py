@@ -7,7 +7,7 @@ from ..extensions import db
 
 class AuditLog(db.Model):
     """
-    Audit-лог дій адмінів (хто що зробив у панелі).
+    Audit-Protokoll der Administratoraktionen (wer was im Admin-Panel gemacht hat).
     """
 
     __tablename__ = "audit_logs"

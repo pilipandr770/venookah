@@ -44,7 +44,7 @@ def save_uploaded_file(file_field, subfolder="uploads"):
 
 def admin_required(view_func):
     """
-    Декоратор для перевірки, що користувач — адміністратор або суперадмін.
+    Dekorator zur Überprüfung, dass der Nutzer Administrator oder Superadmin ist.
     """
     from functools import wraps
 
@@ -83,8 +83,8 @@ def categories_list():
 def category_create():
     form = CategoryForm()
 
-    # наповнюємо список батьківських категорій
-    form.parent_id.choices = [(0, "--- немає ---")] + [
+    # Fülle die Liste der übergeordneten Kategorien
+    form.parent_id.choices = [(0, "--- keine ---")] + [
         (c.id, c.name) for c in Category.query.order_by(Category.name.asc()).all()
     ]
 
@@ -104,10 +104,10 @@ def category_create():
         )
         db.session.add(category)
         db.session.commit()
-        flash("Категорію створено.", "success")
+        flash("Kategorie erstellt.", "success")
         return redirect(url_for("admin.categories_list"))
 
-    return render_template("admin/category_form.html", form=form, title="Створити категорію")
+    return render_template("admin/category_form.html", form=form, title="Kategorie erstellen")
 
 
 @bp.route("/categories/<int:category_id>/edit", methods=["GET", "POST"])
@@ -116,7 +116,7 @@ def category_edit(category_id: int):
     category = Category.query.get_or_404(category_id)
     form = CategoryForm(obj=category)
 
-    form.parent_id.choices = [(0, "--- немає ---")] + [
+    form.parent_id.choices = [(0, "--- keine ---")] + [
         (c.id, c.name) for c in Category.query.filter(Category.id != category.id).order_by(Category.name.asc()).all()
     ]
     form.parent_id.data = category.parent_id or 0
@@ -135,10 +135,10 @@ def category_edit(category_id: int):
         category.parent = parent
 
         db.session.commit()
-        flash("Категорію оновлено.", "success")
+        flash("Kategorie aktualisiert.", "success")
         return redirect(url_for("admin.categories_list"))
 
-    return render_template("admin/category_form.html", form=form, title="Редагувати категорію")
+    return render_template("admin/category_form.html", form=form, title="Kategorie bearbeiten")
 
 
 def _prompt_file_path():
@@ -156,7 +156,7 @@ def ai_prompt():
         prompt = request.form.get('prompt', '')
         with open(path, 'w', encoding='utf-8') as f:
             f.write(prompt)
-        flash('Системная инструкция обновлена.', 'success')
+        flash('Systemanweisung aktualisiert.', 'success')
         return redirect(url_for('admin.ai_prompt'))
 
     current_prompt = ''
@@ -176,7 +176,7 @@ def category_delete(category_id: int):
     category = Category.query.get_or_404(category_id)
     db.session.delete(category)
     db.session.commit()
-    flash("Категорію видалено.", "info")
+    flash("Kategorie gelöscht.", "info")
     return redirect(url_for("admin.categories_list"))
 
 
@@ -322,7 +322,7 @@ def debug_products_files_fix():
 @admin_required
 def product_create():
     form = ProductForm()
-    form.category_id.choices = [(0, "--- без категорії ---")] + [
+    form.category_id.choices = [(0, "--- keine Kategorie ---")] + [
         (c.id, c.name) for c in Category.query.order_by(Category.name.asc()).all()
     ]
 
@@ -346,10 +346,10 @@ def product_create():
         )
         db.session.add(product)
         db.session.commit()
-        flash("Товар створено.", "success")
+        flash("Produkt erstellt.", "success")
         return redirect(url_for("admin.products_list"))
 
-    return render_template("admin/product_form.html", form=form, title="Створити товар")
+    return render_template("admin/product_form.html", form=form, title="Produkt erstellen")
 
 
 @bp.route("/products/<int:product_id>/edit", methods=["GET", "POST"])
@@ -358,7 +358,7 @@ def product_edit(product_id: int):
     product = Product.query.get_or_404(product_id)
     form = ProductForm(obj=product)
 
-    form.category_id.choices = [(0, "--- без категорії ---")] + [
+    form.category_id.choices = [(0, "--- keine Kategorie ---")] + [
         (c.id, c.name) for c in Category.query.order_by(Category.name.asc()).all()
     ]
     form.category_id.data = product.category_id or 0
@@ -381,10 +381,10 @@ def product_edit(product_id: int):
         product.is_active = form.is_active.data
 
         db.session.commit()
-        flash("Товар оновлено.", "success")
+        flash("Produkt aktualisiert.", "success")
         return redirect(url_for("admin.products_list"))
 
-    return render_template("admin/product_form.html", form=form, title="Редагувати товар")
+    return render_template("admin/product_form.html", form=form, title="Produkt bearbeiten")
 
 
 @bp.route("/products/<int:product_id>/delete", methods=["POST"])
@@ -393,7 +393,7 @@ def product_delete(product_id: int):
     product = Product.query.get_or_404(product_id)
     db.session.delete(product)
     db.session.commit()
-    flash("Товар видалено.", "info")
+    flash("Produkt gelöscht.", "info")
     return redirect(url_for("admin.products_list"))
 
 
@@ -476,7 +476,7 @@ def change_user_role(user_id: int):
     if new_role in [UserRole.ADMIN, UserRole.WAREHOUSE_ADMIN, UserRole.SUPERADMIN, UserRole.B2B, UserRole.B2C]:
         user.role = new_role
         db.session.commit()
-        flash(f"Роль пользователя {user.email} изменена на {new_role}.", "success")
+        flash(f"Rolle des Benutzers {user.email} wurde auf {new_role} geändert.", "success")
     else:
-        flash("Неверная роль.", "danger")
+        flash("Ungültige Rolle.", "danger")
     return redirect(url_for('admin.users'))

@@ -22,15 +22,15 @@
       {% endif %}
     </p>
 
-    <p>{{ product.description or "Опис товару буде додано пізніше." }}</p>
+    <p>{{ product.description or "Produktbeschreibung wird später hinzugefügt." }}</p>
 
     {% if current_user.is_authenticated %}
       <form method="post" action="{{ url_for('shop_public.add_to_cart', product_id=product.id) }}">
         <input type="hidden" name="slug" value="{{ product.slug }}">
-        <button type="submit" class="btn btn-success">Додати в кошик</button>
+        <button type="submit" class="btn btn-success">In den Warenkorb</button>
       </form>
     {% else %}
-      <a href="{{ url_for('auth.login') }}" class="btn btn-success">Увійдіть, щоб додати в кошик</a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-success">Melden Sie sich an, um zum Warenkorb hinzuzufügen</a>
     {% endif %}
   </div>
 </div>

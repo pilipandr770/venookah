@@ -1,8 +1,8 @@
 # file: scripts/backup_db.py
 
 """
-Проста заглушка для резервного копіювання БД.
-На Render можна буде налаштувати свій механізм.
+Ein einfacher Stub für Datenbank-Backups.
+Auf Render kann später ein eigener Mechanismus konfiguriert werden.
 """
 
 from datetime import datetime
@@ -13,8 +13,8 @@ from backend.config import _build_sqlalchemy_uri
 
 def main():
     uri = _build_sqlalchemy_uri()
-    print("Резервне копіювання для:", uri)
-    # TODO: реалізувати логіку backup для Postgres (pg_dump через subprocess)
+    print("Backup für:", uri)
+    # TODO: Backup-Logik für Postgres implementieren (z. B. pg_dump via subprocess)
 
 
 if __name__ == "__main__":

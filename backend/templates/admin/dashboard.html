@@ -1,19 +1,19 @@
 <!-- file: backend/templates/admin/dashboard.html -->
 {% extends "base.html" %}
 
-{% block title %}Адмін-панель — Venookah 2.0{% endblock %}
+{% block title %}Admin-Bereich — Venookah 2.0{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">Адмін-панель</h1>
+<h1 class="mb-4">Admin-Bereich</h1>
 
-<!-- Управління каталогом -->
+<!-- Katalogverwaltung -->
 <div class="row g-3 mb-4">
   <div class="col-md-3">
     <div class="card h-100">
       <div class="card-body text-center">
-        <h5 class="card-title">Категорії</h5>
-        <p class="card-text">Створювати та редагувати категорії товарів</p>
-        <a href="{{ url_for('admin.categories_list') }}" class="btn btn-primary">Переглянути</a>
+        <h5 class="card-title">Kategorien</h5>
+        <p class="card-text">Kategorien erstellen und bearbeiten</p>
+        <a href="{{ url_for('admin.categories_list') }}" class="btn btn-primary">Ansehen</a>
       </div>
     </div>
   </div>
@@ -21,9 +21,9 @@
   <div class="col-md-3">
     <div class="card h-100">
       <div class="card-body text-center">
-        <h5 class="card-title">Товари</h5>
-        <p class="card-text">Додавати та керувати товарами</p>
-        <a href="{{ url_for('admin.products_list') }}" class="btn btn-primary">Переглянути</a>
+        <h5 class="card-title">Produkte</h5>
+        <p class="card-text">Produkte hinzufügen und verwalten</p>
+        <a href="{{ url_for('admin.products_list') }}" class="btn btn-primary">Ansehen</a>
       </div>
     </div>
   </div>
@@ -31,9 +31,9 @@
   <div class="col-md-3">
     <div class="card h-100">
       <div class="card-body text-center">
-        <h5 class="card-title">AI — системна інструкція</h5>
-        <p class="card-text">Редагувати системну інструкцію для чат-асистента (публичный чат)</p>
-        <a href="{{ url_for('admin.ai_prompt') }}" class="btn btn-primary">Редагувати інструкцію</a>
+        <h5 class="card-title">KI — Systemanweisung</h5>
+        <p class="card-text">Systemanweisung für Chat-Assistenten bearbeiten (öffentlicher Chat)</p>
+        <a href="{{ url_for('admin.ai_prompt') }}" class="btn btn-primary">Anweisung bearbeiten</a>
       </div>
     </div>
   </div>
@@ -41,9 +41,9 @@
   <div class="col-md-3">
     <div class="card h-100">
       <div class="card-body text-center">
-        <h5 class="card-title">Замовлення</h5>
-        <p class="card-text">Перегляд та обробка замовлень</p>
-        <a href="{{ url_for('admin.orders_list') }}" class="btn btn-primary">Переглянути</a>
+        <h5 class="card-title">Bestellungen</h5>
+        <p class="card-text">Bestellungen ansehen und bearbeiten</p>
+        <a href="{{ url_for('admin.orders_list') }}" class="btn btn-primary">Ansehen</a>
       </div>
     </div>
   </div>
@@ -52,8 +52,8 @@
     <div class="card h-100">
       <div class="card-body text-center">
         <h5 class="card-title">CRM</h5>
-        <p class="card-text">Керування компаніями та перевірками</p>
-        <a href="{{ url_for('admin.companies_list') }}" class="btn btn-primary">Переглянути</a>
+        <p class="card-text">Verwaltung von Firmen und Prüfungen</p>
+        <a href="{{ url_for('admin.companies_list') }}" class="btn btn-primary">Ansehen</a>
       </div>
     </div>
   </div>
@@ -61,23 +61,23 @@
   <div class="col-md-3">
     <div class="card h-100">
       <div class="card-body text-center">
-        <h5 class="card-title">Користувачі</h5>
-        <p class="card-text">Перегляд всіх користувачів</p>
-        <a href="{{ url_for('admin.users_list') }}" class="btn btn-primary">Переглянути</a>
+        <h5 class="card-title">Benutzer</h5>
+        <p class="card-text">Alle Benutzer anzeigen</p>
+        <a href="{{ url_for('admin.users_list') }}" class="btn btn-primary">Ansehen</a>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Статистика -->
+<!-- Statistik -->
 <div class="row g-3 mb-4">
   <div class="col-md-3">
     <div class="card h-100">
       <div class="card-body">
-        <h6 class="text-muted">Користувачі</h6>
+        <h6 class="text-muted">Benutzer</h6>
         <h3 class="mb-0">{{ users_total }}</h3>
         <small class="text-muted">B2B: {{ b2b_users }}</small><br>
-        <small class="text-muted">Компаній у CRM: {{ companies_total }}</small>
+        <small class="text-muted">Firmen im CRM: {{ companies_total }}</small>
       </div>
     </div>
   </div>
@@ -85,9 +85,9 @@
   <div class="col-md-3">
     <div class="card h-100">
       <div class="card-body">
-        <h6 class="text-muted">Замовлення сьогодні</h6>
+        <h6 class="text-muted">Bestellungen heute</h6>
         <h3 class="mb-0">{{ orders_today|length }}</h3>
-        <small class="text-muted">Оновлюється в реальному часі</small>
+        <small class="text-muted">Aktualisiert in Echtzeit</small>
       </div>
     </div>
   </div>
@@ -95,9 +95,9 @@
   <div class="col-md-3">
     <div class="card h-100">
       <div class="card-body">
-        <h6 class="text-muted">Платежі сьогодні</h6>
+        <h6 class="text-muted">Zahlungen heute</h6>
         <h3 class="mb-0">{{ payments_today|length }}</h3>
-        <small class="text-muted">Stripe / інші</small>
+        <small class="text-muted">Stripe / andere</small>
       </div>
     </div>
   </div>
@@ -105,10 +105,10 @@
   <div class="col-md-3">
     <div class="card h-100">
       <div class="card-body">
-        <h6 class="text-muted">Оборот</h6>
+        <h6 class="text-muted">Umsatz</h6>
         <p class="mb-1">
-          7 днів: <strong>{{ summary_7d.total_amount }} EUR</strong><br>
-          30 днів: <strong>{{ summary_30d.total_amount }} EUR</strong>
+          7 Tage: <strong>{{ summary_7d.total_amount }} EUR</strong><br>
+          30 Tage: <strong>{{ summary_30d.total_amount }} EUR</strong>
         </p>
       </div>
     </div>
@@ -119,7 +119,7 @@
   <div class="col-md-6">
     <div class="card h-100">
       <div class="card-header">
-        Топ клієнти
+        Top-Kunden
       </div>
       <div class="card-body">
         {% if top_customers %}
@@ -132,7 +132,7 @@
             {% endfor %}
           </ul>
         {% else %}
-          <p class="mb-0 text-muted">Поки що немає даних.</p>
+          <p class="mb-0 text-muted">Noch keine Daten.</p>
         {% endif %}
       </div>
     </div>
@@ -141,7 +141,7 @@
   <div class="col-md-6">
     <div class="card h-100">
       <div class="card-header">
-        Останні B2B-перевірки
+        Letzte B2B-Prüfungen
       </div>
       <div class="card-body">
         {% if last_b2b_checks %}
@@ -149,11 +149,11 @@
             <table class="table table-sm align-middle">
               <thead>
                 <tr>
-                  <th>Компанія</th>
+                  <th>Firma</th>
                   <th>VAT</th>
-                  <th>Країна</th>
+                  <th>Land</th>
                   <th>Score</th>
-                  <th>Дата</th>
+                  <th>Datum</th>
                 </tr>
               </thead>
               <tbody>
@@ -170,7 +170,7 @@
             </table>
           </div>
         {% else %}
-          <p class="mb-0 text-muted">B2B-перевірок ще не було.</p>
+          <p class="mb-0 text-muted">Noch keine B2B-Prüfungen.</p>
         {% endif %}
       </div>
     </div>

@@ -1,41 +1,41 @@
 <!-- file: backend/templates/shop/checkout.html -->
 {% extends "base.html" %}
 
-{% block title %}Оформлення замовлення — Venookah 2.0{% endblock %}
+{% block title %}Bestellung abschließen — Venookah 2.0{% endblock %}
 
 {% block head_extra %}
 <script src="https://js.stripe.com/v3/"></script>
 {% endblock %}
 
 {% block content %}
-<h1 class="mb-4">Оформлення замовлення</h1>
+<h1 class="mb-4">Bestellung abschließen</h1>
 
 {% if client_secret %}
   <div class="row">
     <div class="col-md-8">
-      <h3>Товари</h3>
+      <h3>Produkte</h3>
       {% for item in items %}
         <div class="d-flex justify-content-between mb-2">
-          <span>{{ item.product.name }} ({{ item.quantity }} шт.)</span>
+          <span>{{ item.product.name }} ({{ item.quantity }} Stk.)</span>
           <span>{{ "%.2f"|format(item.quantity * (item.product.price_b2b if current_user.is_b2b else item.product.price_b2c)) }} {{ item.product.currency }}</span>
         </div>
       {% endfor %}
       <hr>
       <div class="d-flex justify-content-between">
-        <strong>Загальна сума:</strong>
+        <strong>Gesamtbetrag:</strong>
         <strong>{{ "%.2f"|format(total) }} {{ items[0].product.currency if items else "EUR" }}</strong>
       </div>
     </div>
     <div class="col-md-4">
       <div class="card">
         <div class="card-body">
-          <h5 class="card-title">Оплата</h5>
+          <h5 class="card-title">Zahlung</h5>
           <form id="payment-form">
             <div id="card-element">
               <!-- A Stripe Element will be inserted here. -->
             </div>
             <div id="card-errors" role="alert"></div>
-            <button id="submit" class="btn btn-success w-100 mt-3">Оплатити</button>
+            <button id="submit" class="btn btn-success w-100 mt-3">Bezahlen</button>
           </form>
         </div>
       </div>
@@ -73,29 +73,29 @@
 {% else %}
   <div class="row">
     <div class="col-md-8">
-      <h3>Товари</h3>
+      <h3>Produkte</h3>
       {% for item in items %}
         <div class="d-flex justify-content-between mb-2">
-          <span>{{ item.product.name }} ({{ item.quantity }} шт.)</span>
+          <span>{{ item.product.name }} ({{ item.quantity }} Stk.)</span>
           <span>{{ "%.2f"|format(item.quantity * (item.product.price_b2b if current_user.is_b2b else item.product.price_b2c)) }} {{ item.product.currency }}</span>
         </div>
       {% endfor %}
       <hr>
       <div class="d-flex justify-content-between">
-        <strong>Загальна сума:</strong>
+        <strong>Gesamtbetrag:</strong>
         <strong>{{ "%.2f"|format(total) }} {{ items[0].product.currency if items else "EUR" }}</strong>
       </div>
     </div>
     <div class="col-md-4">
       <div class="card">
         <div class="card-body">
-          <h5 class="card-title">Дані для доставки</h5>
+          <h5 class="card-title">Lieferdaten</h5>
           <form method="post">
             <div class="mb-3">
-              <label for="address" class="form-label">Адреса доставки</label>
+              <label for="address" class="form-label">Lieferadresse</label>
               <textarea name="address" id="address" class="form-control" rows="3" required>{{ current_user.address or "" }}</textarea>
             </div>
-            <button type="submit" class="btn btn-success w-100">Підтвердити замовлення</button>
+            <button type="submit" class="btn btn-success w-100">Bestellung bestätigen</button>
           </form>
         </div>
       </div>

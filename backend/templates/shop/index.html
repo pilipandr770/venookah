@@ -1,14 +1,14 @@
 <!-- file: backend/templates/shop/index.html -->
 {% extends "base.html" %}
 
-{% block title %}Магазин — Venookah 2.0{% endblock %}
+{% block title %}Shop — Venookah 2.0{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="mb-0">Магазин</h1>
+  <h1 class="mb-0">Shop</h1>
   <form method="post" class="d-flex" style="gap: 0.5rem;">
     {{ form.hidden_tag() }}
-    {{ form.query(class="form-control", placeholder="Пошук товарів...") }}
+    {{ form.query(class="form-control", placeholder="Produkte suchen...") }}
     {{ form.submit(class="btn btn-outline-primary") }}
   </form>
 </div>
@@ -42,7 +42,7 @@
       <div class="accordion-item">
         <h2 class="accordion-header">
           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tobaccoCollapse" aria-expanded="false" aria-controls="tobaccoCollapse">
-            Тютюн ({{ tobacco_products|length }} товарів)
+            Tabak ({{ tobacco_products|length }} Produkte)
           </button>
         </h2>
         <div id="tobaccoCollapse" class="accordion-collapse collapse" data-bs-parent="#shopAccordion">
@@ -64,7 +64,7 @@
                         {% endif %}
                       </p>
                       <a href="#" data-href="{{ url_for('shop_public.product_detail', slug=product.slug) }}" class="btn btn-sm btn-primary mt-auto product-detail-link">
-                        Детальніше
+                        Mehr erfahren
                       </a>
                     </div>
                   </div>
@@ -79,8 +79,8 @@
     {% if coal_products %}
       <div class="accordion-item">
         <h2 class="accordion-header">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#coalCollapse" aria-expanded="false" aria-controls="coalCollapse">
-            Вугілля ({{ coal_products|length }} товарів)
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#coalCollapse" aria-expanded="false" aria-controls="coalCollapse">
+            Kohle ({{ coal_products|length }} Produkte)
           </button>
         </h2>
         <div id="coalCollapse" class="accordion-collapse collapse" data-bs-parent="#shopAccordion">
@@ -103,7 +103,7 @@
                       </p>
                       <a href="{{ url_for('shop_public.product_detail', slug=product.slug) }}"
                          class="btn btn-sm btn-primary mt-auto">
-                        Детальніше
+                        Mehr erfahren
                       </a>
                     </div>
                   </div>
@@ -116,11 +116,11 @@
     {% endif %}
   </div>
 {% else %}
-  <p>Поки що немає доступних товарів.</p>
+  <p>Derzeit sind keine Produkte verfügbar.</p>
 {% endif %}
 
 {% if not (tobacco_products or coal_products) and products %}
-  <h3>Товари</h3>
+  <h3>Produkte</h3>
   <div class="row">
     {% for product in products %}
       <div class="col-md-4 mb-4">
@@ -137,10 +137,10 @@
                 <br><small class="text-muted">B2B: {{ product.price_b2b }} {{ product.currency }}</small>
               {% endif %}
             </p>
-            <a href="{{ url_for('shop_public.product_detail', slug=product.slug) }}"
+              <a href="{{ url_for('shop_public.product_detail', slug=product.slug) }}"
                class="btn btn-sm btn-primary mt-auto">
-              Детальніше
-            </a>
+              Mehr erfahren
+              </a>
           </div>
         </div>
       </div>

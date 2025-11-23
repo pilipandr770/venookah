@@ -1,7 +1,7 @@
 # file: worker/tasks/sync_b2b_checks.py
 
 """
-Пере-перевірка B2B-клієнтів за розкладом (MVP заглушка).
+Wiederholte Überprüfung von B2B-Kunden nach Zeitplan (MVP-Platzhalter).
 """
 
 from backend.extensions import db

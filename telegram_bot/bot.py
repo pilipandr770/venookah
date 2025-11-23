@@ -1,7 +1,7 @@
 # file: telegram_bot/bot.py
 
 """
-MVP-бот для шефа (поки тільки /start і /ping).
+MVP-Bot für den Inhaber (derzeit nur /start und /ping).
 """
 
 import asyncio
@@ -25,12 +25,12 @@ dp = Dispatcher()
 @dp.message(CommandStart())
 async def cmd_start(message: types.Message):
     kb = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(text='Склад')],
-        [KeyboardButton(text='Магазин')],
-        [KeyboardButton(text='Доставка морських вантажів')]
+        [KeyboardButton(text='Lager')],
+        [KeyboardButton(text='Shop')],
+        [KeyboardButton(text='Seefracht')]
     ], resize_keyboard=True)
     await message.answer(
-        "Привіт! Виберіть відділ для запиту:",
+        "Hallo! Wählen Sie eine Abteilung für die Anfrage:",
         reply_markup=kb
     )
 
@@ -49,17 +49,17 @@ async def handle_text(message: types.Message):
     """
     text = (message.text or '').strip()
     if not text:
-        await message.answer("Порожнє повідомлення. Надішліть текст або голосове повідомлення.")
+        await message.answer("Leere Nachricht. Bitte senden Sie einen Text oder eine Sprachnachricht.")
         return
     department_map = {
-        'Склад': 'warehouse',
-        'Магазин': 'shop',
-        'Доставка морських вантажів': 'sea'
+        'Lager': 'warehouse',
+        'Shop': 'shop',
+        'Seefracht': 'sea'
     }
 
     # If user pressed a department button
     if text in department_map:
-        await message.answer(f"Ви обрали відділ: {text}. Надішліть голосове повідомлення або текстовий запит, і я спитаю модель.")
+        await message.answer(f"Sie haben die Abteilung gewählt: {text}. Senden Sie eine Sprachnachricht oder eine Textanfrage, und ich werde das Modell befragen.")
         # store last department in a simple file-based cache per user (for demo)
         tmpdir = os.getenv('TEMP', '.')
         path = os.path.join(tmpdir, f'tg_dept_{message.from_user.id}.txt')
@@ -86,15 +86,15 @@ async def handle_text(message: types.Message):
         except requests.exceptions.HTTPError as he:
             # include response body for debugging
             body = he.response.text if getattr(he, 'response', None) is not None else str(he)
-            await message.answer(f"Ошибка при запросе AI: {body[:1000]}")
+            await message.answer(f"Fehler bei der AI-Anfrage: {body[:1000]}")
             return
         j = resp.json()
         reply = j.get('reply') or j.get('error') or 'No reply'
         await message.answer(reply)
     except requests.exceptions.RequestException as e:
-        await message.answer(f"Ошибка при запросе AI: {str(e)}")
+        await message.answer(f"Fehler bei der AI-Anfrage: {str(e)}")
     except Exception as e:
-        await message.answer(f"Unexpected error: {e}")
+        await message.answer(f"Unerwarteter Fehler: {e}")
 
 
 @dp.message(lambda message: getattr(message, 'voice', None) is not None or getattr(message, 'audio', None) is not None)
@@ -110,7 +110,7 @@ async def handle_voice(message: types.Message):
         file_path = file.file_path
         file_bytes = await bot.download_file(file_path)
     except Exception as ex:
-        await message.answer(f"Не вдалося завантажити голосове повідомлення: {ex}")
+        await message.answer(f"Sprachnachricht konnte nicht heruntergeladen werden: {ex}")
         return
 
     tmpdir = os.getenv('TEMP', '.')
@@ -145,14 +145,14 @@ async def handle_voice(message: types.Message):
             resp.raise_for_status()
         except requests.exceptions.HTTPError as he:
             body = he.response.text if getattr(he, 'response', None) is not None else str(he)
-            await message.answer(f"Ошибка при запросе AI: {body[:1000]}")
+            await message.answer(f"Fehler bei der AI-Anfrage: {body[:1000]}")
             return
         j = resp.json()
         await message.answer(j.get('reply') or j.get('error') or 'No reply')
     except requests.exceptions.RequestException as e:
-        await message.answer(f"Ошибка при запросе AI: {str(e)}")
+        await message.answer(f"Fehler bei der AI-Anfrage: {str(e)}")
     except Exception as e:
-        await message.answer(f"Unexpected error: {e}")
+        await message.answer(f"Unerwarteter Fehler: {e}")
 
 
 async def main():

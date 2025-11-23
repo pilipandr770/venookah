@@ -1,10 +1,10 @@
 <!-- file: backend/templates/admin/orders_list.html -->
 {% extends "base.html" %}
 
-{% block title %}Замовлення — Адмінка{% endblock %}
+{% block title %}Bestellungen — Admin{% endblock %}
 
 {% block content %}
-<h1 class="mb-3">Замовлення</h1>
+<h1 class="mb-3">Bestellungen</h1>
 
 {% if orders %}
   <div class="table-responsive">
@@ -12,11 +12,11 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Користувач</th>
-          <th>Статус</th>
-          <th>Сума</th>
+          <th>Benutzer</th>
+          <th>Status</th>
+          <th>Betrag</th>
           <th>B2B</th>
-          <th>Дата</th>
+          <th>Datum</th>
           <th></th>
         </tr>
       </thead>
@@ -27,10 +27,10 @@
             <td>{{ o.user.email }}</td>
             <td>{{ o.status }}</td>
             <td>{{ o.total_amount }} {{ o.currency }}</td>
-            <td>{% if o.is_b2b %}так{% else %}ні{% endif %}</td>
+            <td>{% if o.is_b2b %}Ja{% else %}Nein{% endif %}</td>
             <td>{{ o.created_at }}</td>
             <td class="text-end">
-              <a href="{{ url_for('admin.order_detail', order_id=o.id) }}" class="btn btn-sm btn-outline-secondary">Деталі</a>
+              <a href="{{ url_for('admin.order_detail', order_id=o.id) }}" class="btn btn-sm btn-outline-secondary">Details</a>
             </td>
           </tr>
         {% endfor %}

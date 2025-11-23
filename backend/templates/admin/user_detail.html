@@ -1,38 +1,38 @@
 <!-- file: backend/templates/admin/user_detail.html -->
 {% extends "base.html" %}
 
-{% block title %}Користувач {{ user.email }}{% endblock %}
+{% block title %}Benutzer {{ user.email }}{% endblock %}
 
 {% block content %}
-<h1 class="mb-3">Користувач: {{ user.email }}</h1>
+<h1 class="mb-3">Benutzer: {{ user.email }}</h1>
 
 <div class="mb-3">
-  <strong>Ім'я:</strong> {{ user.first_name or '—' }}<br>
-  <strong>Прізвище:</strong> {{ user.last_name or '—' }}<br>
-  <strong>Компанія:</strong> {{ user.company_name or '—' }}<br>
+  <strong>Vorname:</strong> {{ user.first_name or '—' }}<br>
+  <strong>Nachname:</strong> {{ user.last_name or '—' }}<br>
+  <strong>Firma:</strong> {{ user.company_name or '—' }}<br>
   <strong>VAT:</strong> {{ user.vat_number or '—' }}<br>
   <strong>Handelsregister:</strong> {{ user.handelsregister or '—' }}<br>
-  <strong>Країна:</strong> {{ user.country or '—' }}<br>
-  <strong>Місто:</strong> {{ user.city or '—' }}<br>
-  <strong>Адреса:</strong> {{ user.address or '—' }}<br>
-  <strong>Індекс:</strong> {{ user.postal_code or '—' }}<br>
-  <strong>Телефон:</strong> {{ user.phone or '—' }}<br>
-  <strong>Тип:</strong> {% if user.is_b2b %}B2B{% else %}B2C{% endif %}<br>
-  <strong>Роль:</strong> {{ user.role }}<br>
-  <strong>Статус:</strong> {% if user.is_active %}Активний{% else %}Неактивний{% endif %}<br>
-  <strong>Створено:</strong> {{ user.created_at.strftime('%Y-%m-%d %H:%M') }}
+  <strong>Land:</strong> {{ user.country or '—' }}<br>
+  <strong>Stadt:</strong> {{ user.city or '—' }}<br>
+  <strong>Adresse:</strong> {{ user.address or '—' }}<br>
+  <strong>PLZ:</strong> {{ user.postal_code or '—' }}<br>
+  <strong>Telefon:</strong> {{ user.phone or '—' }}<br>
+  <strong>Typ:</strong> {% if user.is_b2b %}B2B{% else %}B2C{% endif %}<br>
+  <strong>Rolle:</strong> {{ user.role }}<br>
+  <strong>Status:</strong> {% if user.is_active %}Aktiv{% else %}Inaktiv{% endif %}<br>
+  <strong>Erstellt:</strong> {{ user.created_at.strftime('%Y-%m-%d %H:%M') }}
 </div>
 
-<h4>Останні замовлення</h4>
+<h4>Letzte Bestellungen</h4>
 {% if orders %}
   <div class="table-responsive">
     <table class="table table-sm align-middle">
       <thead>
         <tr>
           <th>ID</th>
-          <th>Статус</th>
-          <th>Сума</th>
-          <th>Дата</th>
+          <th>Status</th>
+          <th>Betrag</th>
+          <th>Datum</th>
         </tr>
       </thead>
       <tbody>
@@ -48,6 +48,6 @@
     </table>
   </div>
 {% else %}
-  <p>Замовлень ще немає.</p>
+  <p>Noch keine Bestellungen.</p>
 {% endif %}
 {% endblock %}

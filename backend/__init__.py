@@ -1,11 +1,11 @@
 # file: backend/__init__.py
 
 """
-Пакет backend для Venookah2.
+Backend-Paket für Venookah2.
 
-Щоб запустити додаток:
+Um die Anwendung zu starten:
 FLASK_APP=backend.app flask run
-або використовувати create_app() в WSGI.
+oder `create_app()` im WSGI verwenden.
 """
 
 from .app import create_app  # noqa: F401

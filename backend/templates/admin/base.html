@@ -1,18 +1,18 @@
 {% extends 'base.html' %}
 
-{% block title %}Адмін — Venookah{% endblock %}
+{% block title %}Admin — Venookah{% endblock %}
 
 {% block content %}
 <div class="row">
   <div class="col-md-3">
     <div class="list-group mb-4">
-      <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action">Панель</a>
-      <a href="{{ url_for('admin.categories_list') }}" class="list-group-item list-group-item-action">Категорії</a>
-      <a href="{{ url_for('admin.products_list') }}" class="list-group-item list-group-item-action">Товари</a>
-      <a href="{{ url_for('admin.orders_list') }}" class="list-group-item list-group-item-action">Замовлення</a>
+      <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action">Dashboard</a>
+      <a href="{{ url_for('admin.categories_list') }}" class="list-group-item list-group-item-action">Kategorien</a>
+      <a href="{{ url_for('admin.products_list') }}" class="list-group-item list-group-item-action">Produkte</a>
+      <a href="{{ url_for('admin.orders_list') }}" class="list-group-item list-group-item-action">Bestellungen</a>
       <a href="{{ url_for('admin.companies_list') }}" class="list-group-item list-group-item-action">CRM</a>
-      <a href="{{ url_for('admin.users_list') }}" class="list-group-item list-group-item-action">Користувачі</a>
-      <a href="{{ url_for('admin.ai_prompt') }}" class="list-group-item list-group-item-action">AI — інструкція</a>
+      <a href="{{ url_for('admin.users_list') }}" class="list-group-item list-group-item-action">Benutzer</a>
+      <a href="{{ url_for('admin.ai_prompt') }}" class="list-group-item list-group-item-action">AI — Anleitung</a>
     </div>
   </div>
 

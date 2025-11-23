@@ -1,7 +1,7 @@
 # file: scripts/import_products_from_csv.py
 
 """
-Імпорт товарів з CSV (MVP-заглушка).
+Import von Produkten aus einer CSV-Datei (MVP-Stub).
 """
 
 import csv
@@ -48,7 +48,7 @@ def import_from_csv(csv_path: str):
                     db.session.add(product)
 
         db.session.commit()
-        print("Імпорт товарів завершено.")
+        print("Import der Produkte abgeschlossen.")
 
 
 if __name__ == "__main__":

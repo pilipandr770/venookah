@@ -7,53 +7,53 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 def _build_sqlalchemy_uri() -> str:
-    """
-    Формуємо SQLALCHEMY_DATABASE_URI.
+        """
+        Erstelle die SQLALCHEMY_DATABASE_URI.
 
-    - Якщо є DATABASE_URL (наприклад, з Render), використовуємо його.
-    - Якщо URL починається з postgres:// — замінюємо на postgresql+psycopg2://
-      (класична проблема Render/Heroku).
-    - Інакше падаємо назад на локальний SQLite (для аварійного дев-режиму).
-    """
+        - Wenn `DATABASE_URL` gesetzt ist (z. B. von Render), verwenden wir sie.
+        - Wenn die URL mit `postgres://` beginnt, ersetzen wir sie durch
+            `postgresql+psycopg2://` (häufiges Render/Heroku-Problem).
+        - Andernfalls verwenden wir lokal SQLite als Fallback (für schnellen Dev-Use).
+        """
     raw = os.getenv("DATABASE_URL")
     if raw:
-        # Fix для формату postgres://
+        # Fix für das Format postgres://
         if raw.startswith("postgres://"):
             raw = raw.replace("postgres://", "postgresql+psycopg2://", 1)
         return raw
 
-    # fallback — SQLite локально
+    # Fallback — lokal SQLite
     return f"sqlite:///{BASE_DIR / 'venookah2.db'}"
 
 
 class BaseConfig:
-    """Базовий конфіг для всіх середовищ."""
+    """Basis-Konfiguration für alle Umgebungen."""
 
-    # Загальне
+    # Allgemein
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me")
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
-    # БД
+    # Datenbank
     SQLALCHEMY_DATABASE_URI = _build_sqlalchemy_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Схема бази (ДУЖЕ ВАЖЛИВО ДЛЯ ТЕБЕ)
-    # Наприклад: venookah2, auction7, dating_bot тощо.
+    # Datenbankschema (WICHTIG)
+    # Zum Beispiel: venookah2, auction7, dating_bot, etc.
     DB_SCHEMA = os.getenv("DB_SCHEMA", "venookah2") if SQLALCHEMY_DATABASE_URI.startswith("postgresql") else None
 
-    # Примушуємо Postgres використовувати потрібний search_path
-    # (щоб усі таблиці створювались у твоїй схемі, а не в public)
+    # Erzwinge, dass Postgres den gewünschten search_path verwendet
+    # (damit alle Tabellen in deinem Schema und nicht in "public" erstellt werden)
     if SQLALCHEMY_DATABASE_URI.startswith("postgresql"):
         SQLALCHEMY_ENGINE_OPTIONS = {
             "connect_args": {
-                # це передається драйверу psycopg2
+                # dies wird an den psycopg2-Treiber übergeben
                 "options": f"-csearch_path={DB_SCHEMA}"
             }
         }
     else:
         SQLALCHEMY_ENGINE_OPTIONS = {}
 
-    # Redis (для воркерів/черг, якщо треба)
+    # Redis (für Worker/Queues, falls benötigt)
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
     # Stripe
@@ -66,14 +66,16 @@ class BaseConfig:
     OPENAI_ASSISTANT_ID_SHOP = os.getenv("OPENAI_ASSISTANT_ID_SHOP", "")
     OPENAI_ASSISTANT_ID_BOSS = os.getenv("OPENAI_ASSISTANT_ID_BOSS", "")
 
-    # Telegram бот для шефа
+    # Telegram-Bot für den Inhaber
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 
-    # Мультимовність
+    # Mehrsprachigkeit
     BABEL_DEFAULT_LOCALE = os.getenv("BABEL_DEFAULT_LOCALE", "de")
     BABEL_DEFAULT_TIMEZONE = os.getenv("BABEL_DEFAULT_TIMEZONE", "Europe/Berlin")
+    # Unterstützte Sprachen (Reihenfolge wichtig für best_match)
+    SUPPORTED_LANGUAGES = ["de", "en"]
 
-    # Безпека / CORS (можемо розширити пізніше)
+    # Sicherheit / CORS (kann später erweitert werden)
     CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "*")
 
     # Shipping APIs
@@ -103,7 +105,7 @@ class TestingConfig(BaseConfig):
 
 
 def get_config_class(env_name: str):
-    """Повертає клас конфіга по назві середовища."""
+    """Gibt die Konfigurationsklasse für den angegebenen Umgebungsnamen zurück."""
     env_name = (env_name or "").lower()
     if env_name == "production":
         return ProductionConfig

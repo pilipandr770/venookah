@@ -1,9 +1,9 @@
 # file: backend/blueprints/admin/services.py
 
 """
-Сервіси для адмін-панелі:
-- агрегація статистики
-- допоміжні функції для CRM/замовлень
+Services für das Admin-Panel:
+- Aggregation von Statistiken
+- Hilfsfunktionen für CRM/Bestellungen
 """
 
 from datetime import datetime, timedelta
@@ -18,7 +18,7 @@ from ...services.report_service import get_sales_summary, get_top_customers
 
 def get_admin_dashboard_data() -> dict:
     """
-    Дані для головної сторінки адмінки.
+    Daten für die Admin-Dashboard-Startseite.
     """
     now = datetime.utcnow()
     today_start = datetime(now.year, now.month, now.day)

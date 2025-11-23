@@ -13,8 +13,8 @@ Provider = Literal["dhl", "dpd"]
 
 def create_shipment_for_order(order: Order, provider: Provider = "dhl") -> Shipment:
     """
-    Створює відправлення для замовлення через вибраного провайдера.
-    (Поки що заглушка з псевдо-трекінгом).
+    Erstellt eine Sendung für eine Bestellung über den gewählten Anbieter.
+    (Derzeit ein Stub mit Pseudo-Tracking).
     """
     if provider == "dpd":
         data = dpd_client.create_shipment(order.id)
@@ -37,7 +37,7 @@ def create_shipment_for_order(order: Order, provider: Provider = "dhl") -> Shipm
 
 def get_shipment_status(provider: Provider, tracking_number: str) -> dict:
     """
-    Отримує статус відправлення по провайдеру та номеру.
+    Ruft den Status einer Sendung anhand des Anbieters und der Tracking-Nummer ab.
     """
     if provider == "dpd":
         return dpd_client.get_shipment_status(tracking_number)

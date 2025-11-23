@@ -1,10 +1,10 @@
 <!-- file: backend/templates/admin/users_list.html -->
 {% extends "base.html" %}
 
-{% block title %}Користувачі{% endblock %}
+{% block title %}Benutzer{% endblock %}
 
 {% block content %}
-<h1 class="mb-3">Користувачі</h1>
+<h1 class="mb-3">Benutzer</h1>
 
 {% if users %}
   <div class="table-responsive">
@@ -13,12 +13,12 @@
         <tr>
           <th>ID</th>
           <th>Email</th>
-          <th>Ім'я</th>
-          <th>Компанія</th>
-          <th>Тип</th>
-          <th>Роль</th>
-          <th>Статус</th>
-          <th>Створено</th>
+          <th>Name</th>
+          <th>Firma</th>
+          <th>Typ</th>
+          <th>Rolle</th>
+          <th>Status</th>
+          <th>Erstellt</th>
           <th></th>
         </tr>
       </thead>
@@ -39,14 +39,14 @@
             <td>{{ u.role.value if u.role else 'N/A' }}</td>
             <td>
               {% if u.is_active %}
-                <span class="badge bg-success">Активний</span>
+                <span class="badge bg-success">Aktiv</span>
               {% else %}
-                <span class="badge bg-danger">Неактивний</span>
+                <span class="badge bg-danger">Inaktiv</span>
               {% endif %}
             </td>
             <td>{{ u.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
             <td class="text-end">
-              {% if current_user.role == 'superadmin' %}
+                  {% if current_user.role == 'superadmin' %}
                 <form method="post" action="{{ url_for('admin.change_user_role', user_id=u.id) }}" style="display:inline;">
                   <select name="role" class="form-select form-select-sm d-inline-block" style="width: auto;">
                     <option value="b2c" {% if u.role == 'b2c' %}selected{% endif %}>B2C</option>
@@ -55,10 +55,10 @@
                     <option value="warehouse_admin" {% if u.role == 'warehouse_admin' %}selected{% endif %}>Warehouse Admin</option>
                     <option value="superadmin" {% if u.role == 'superadmin' %}selected{% endif %}>Superadmin</option>
                   </select>
-                  <button type="submit" class="btn btn-sm btn-primary">Change</button>
+                  <button type="submit" class="btn btn-sm btn-primary">Ändern</button>
                 </form>
               {% endif %}
-              <a href="{{ url_for('admin.user_detail', user_id=u.id) }}" class="btn btn-sm btn-outline-secondary">Відкрити</a>
+              <a href="{{ url_for('admin.user_detail', user_id=u.id) }}" class="btn btn-sm btn-outline-secondary">Öffnen</a>
             </td>
           </tr>
         {% endfor %}
@@ -66,6 +66,6 @@
     </table>
   </div>
 {% else %}
-  <p>Користувачів поки немає.</p>
+  <p>Noch keine Benutzer.</p>
 {% endif %}
 {% endblock %}

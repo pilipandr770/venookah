@@ -1,7 +1,7 @@
 # file: worker/tasks/low_stock_alerts.py
 
 """
-Перевірка низьких залишків на складі і створення алертів.
+Prüft niedrige Lagerbestände und erzeugt Alerts.
 """
 
 from backend.extensions import db
@@ -9,7 +9,7 @@ from backend.models.inventory import StockItem
 from backend.services.alert_service import create_alert
 
 
-LOW_STOCK_THRESHOLD = 50  # TODO: винести в конфіг
+LOW_STOCK_THRESHOLD = 50  # TODO: in Konfiguration auslagern
 
 
 def run():
@@ -22,7 +22,7 @@ def run():
             "quantity_total": item.quantity_total,
             "location": item.location,
         }
-        # TODO: реальний target (chat_id шефа)
+        # TODO: echtes Ziel (Chat-ID des Inhabers)
         create_alert("low_stock", channel="telegram", target="owner_chat_id", payload=payload)
 
     db.session.remove()

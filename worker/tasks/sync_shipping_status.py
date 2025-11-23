@@ -1,7 +1,7 @@
 # file: worker/tasks/sync_shipping_status.py
 
 """
-Оновлення статусів відправлень.
+Aktualisierung der Versandstatus.
 """
 
 from backend.extensions import db

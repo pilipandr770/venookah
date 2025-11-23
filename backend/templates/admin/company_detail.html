@@ -1,33 +1,33 @@
 <!-- file: backend/templates/admin/company_detail.html -->
 {% extends "base.html" %}
 
-{% block title %}Компанія {{ company.name }} — CRM{% endblock %}
+{% block title %}Unternehmen {{ company.name }} — CRM{% endblock %}
 
 {% block content %}
-<h1 class="mb-3">Компанія: {{ company.name }}</h1>
+<h1 class="mb-3">Unternehmen: {{ company.name }}</h1>
 
 <div class="mb-3">
   <strong>VAT:</strong> {{ company.vat_number or '—' }}<br>
-  <strong>Країна:</strong> {{ company.country or '—' }}<br>
-  <strong>Місто:</strong> {{ company.city or '—' }}<br>
-  <strong>Адреса:</strong> {{ company.address or '—' }}<br>
-  <strong>Індекс:</strong> {{ company.postal_code or '—' }}<br>
-  <strong>Користувач:</strong> {{ company.user.email if company.user else '—' }}
+  <strong>Land:</strong> {{ company.country or '—' }}<br>
+  <strong>Stadt:</strong> {{ company.city or '—' }}<br>
+  <strong>Adresse:</strong> {{ company.address or '—' }}<br>
+  <strong>PLZ:</strong> {{ company.postal_code or '—' }}<br>
+  <strong>Benutzer:</strong> {{ company.user.email if company.user else '—' }}
 </div>
 
-<h4>B2B-перевірки</h4>
+<h4>B2B-Prüfungen</h4>
 {% if b2b_checks %}
   <div class="table-responsive">
     <table class="table table-sm align-middle">
       <thead>
         <tr>
-          <th>Дата</th>
-          <th>VAT</th>
-          <th>Країна</th>
-          <th>Valid VAT</th>
-          <th>In Registry</th>
-          <th>Sanctioned</th>
-          <th>Score</th>
+          <th>Datum</th>
+          <th>USt-IdNr.</th>
+          <th>Land</th>
+          <th>Gültige USt-IdNr.</th>
+          <th>Im Register</th>
+          <th>Sanktioniert</th>
+          <th>Bewertung</th>
         </tr>
       </thead>
       <tbody>
@@ -46,8 +46,8 @@
     </table>
   </div>
 {% else %}
-  <p>B2B-перевірок ще немає.</p>
+  <p>Noch keine B2B-Prüfungen.</p>
 {% endif %}
 
-<a href="{{ url_for('admin.companies_list') }}" class="btn btn-secondary mt-3">Назад до списку</a>
+<a href="{{ url_for('admin.companies_list') }}" class="btn btn-secondary mt-3">Zurück zur Liste</a>
 {% endblock %}

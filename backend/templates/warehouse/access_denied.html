@@ -6,8 +6,8 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h1>Доступ заборонено</h1>
-    <p>У вас немає прав для доступу до складу. Зверніться до адміністратора для отримання ролі warehouse_admin.</p>
-    <a href="{{ url_for('shop_public.index') }}" class="btn btn-primary">Повернутися до магазину</a>
+    <h1>Zugriff verweigert</h1>
+    <p>Sie haben keine Berechtigung für den Lagerzugang. Wenden Sie sich an den Administrator, um die Rolle 'warehouse_admin' zu erhalten.</p>
+    <a href="{{ url_for('shop_public.index') }}" class="btn btn-primary">Zurück zum Shop</a>
 </div>
 {% endblock %}

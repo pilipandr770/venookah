@@ -7,7 +7,7 @@ from ..extensions import db
 
 class Container(db.Model):
     """
-    Морські контейнери (MSC).
+    Seeschifffahrtscontainer (MSC).
     """
 
     __tablename__ = "containers"

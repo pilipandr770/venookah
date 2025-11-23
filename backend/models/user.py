@@ -9,22 +9,22 @@ from ..extensions import db
 
 
 class UserRole:
-    """Ролі користувачів у системі."""
+    """Benutzerrollen im System."""
 
-    SUPERADMIN = "superadmin"  # власник бізнесу, має всі права
-    ADMIN = "admin"            # адмін з модульними правами
-    WAREHOUSE_ADMIN = "warehouse_admin"  # адмін складу
-    B2B = "b2b"                # бізнес-клієнт (оптовий)
-    B2C = "b2c"                # приватний клієнт (роздріб)
+    SUPERADMIN = "superadmin"  # Geschäftsinhaber, hat alle Rechte
+    ADMIN = "admin"            # Admin mit modularen Rechten
+    WAREHOUSE_ADMIN = "warehouse_admin"  # Lager-Admin
+    B2B = "b2b"                # Geschäftskunde (Großhandel)
+    B2C = "b2c"                # Privatkunde (Einzelhandel)
 
 
 class User(db.Model, UserMixin):
     """
-    Базова модель користувача.
+    Basis-Benutzermodell.
 
-    Права доступу до модулів (наприклад: "inventory", "orders", "crm")
-    зберігаємо в JSON-полі module_permissions, щоб власник міг гнучко
-    видавати доступи іншим адміністраторам.
+    Zugriffsrechte auf Module (z. B. "inventory", "orders", "crm") werden
+    im JSON-Feld `module_permissions` gespeichert, damit der Besitzer anderen
+    Administratoren flexibel Rechte zuweisen kann.
     """
 
     __tablename__ = "users"
@@ -41,10 +41,10 @@ class User(db.Model, UserMixin):
     company_name = db.Column(db.String(255))
     phone = db.Column(db.String(64))
 
-    # тип користувача (див. UserRole)
+    # Benutzertyp (siehe UserRole)
     role = db.Column(db.String(32), nullable=False, default=UserRole.B2C)
 
-    # B2B / B2C подальші налаштування
+    # B2B / B2C - weitere Felder
     is_b2b = db.Column(db.Boolean, nullable=False, default=False)
     vat_number = db.Column(db.String(64))      # VAT / USt-IdNr
     handelsregister = db.Column(db.String(64)) # Handelsregister
@@ -53,7 +53,7 @@ class User(db.Model, UserMixin):
     address = db.Column(db.String(255))
     postal_code = db.Column(db.String(32))
 
-    # модульні права у вигляді JSON:
+    # Modulrechte als JSON, z. B.:
     # {"inventory": true, "orders": true, "crm": false, "shipping": true}
     module_permissions = db.Column(db.JSON, nullable=True)
 
@@ -74,7 +74,7 @@ class User(db.Model, UserMixin):
     def is_authenticated(self):
         return True
 
-    # is_active вже є полем, Flask-Login його використовує
+    # is_active ist bereits ein Feld, das von Flask-Login verwendet wird
 
     # ---- Password helpers ----
 
@@ -94,11 +94,11 @@ class User(db.Model, UserMixin):
 
     def has_module_permission(self, module_name: str) -> bool:
         """
-        Перевірка доступу до модуля.
+        Prüft den Zugriff auf ein Modul.
 
-        SUPERADMIN завжди має всі права.
-        Для ADMIN дивимось module_permissions.
-        Для B2B/B2C за замовчуванням False (крім того, що явно дозволимо).
+        SUPERADMIN hat immer alle Rechte.
+        Für ADMIN werden `module_permissions` ausgewertet.
+        Für B2B/B2C standardmäßig False (außer explizit erlaubt).
         """
         if self.is_superadmin():
             return True

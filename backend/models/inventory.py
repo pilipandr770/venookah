@@ -7,7 +7,7 @@ from ..extensions import db
 
 class StockItem(db.Model):
     """
-    Запаси на складі по кожному товару.
+    Lagerbestände für jedes Produkt.
     """
 
     __tablename__ = "stock_items"
@@ -18,11 +18,11 @@ class StockItem(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey("venookah2.products.id"), nullable=False)
     product = db.relationship("Product", backref="stock_items")
 
-    # загальний залишок по цьому складу
+    # Gesamtbestand für dieses Lager
     quantity_total = db.Column(db.Integer, nullable=False, default=0)
     quantity_reserved = db.Column(db.Integer, nullable=False, default=0)
 
-    location = db.Column(db.String(255), nullable=True)  # назва складу / зона
+    location = db.Column(db.String(255), nullable=True)  # Lagername / Bereich
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(

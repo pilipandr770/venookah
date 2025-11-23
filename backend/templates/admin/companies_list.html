@@ -1,10 +1,10 @@
 <!-- file: backend/templates/admin/companies_list.html -->
 {% extends "base.html" %}
 
-{% block title %}CRM — Компанії{% endblock %}
+{% block title %}CRM — Unternehmen{% endblock %}
 
 {% block content %}
-<h1 class="mb-3">Компанії (CRM)</h1>
+<h1 class="mb-3">Unternehmen (CRM)</h1>
 
 {% if companies %}
   <div class="table-responsive">
@@ -12,10 +12,10 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Назва</th>
-          <th>VAT</th>
-          <th>Країна</th>
-          <th>Пов'язаний користувач</th>
+          <th>Name</th>
+          <th>USt-IdNr.</th>
+          <th>Land</th>
+          <th>Zugeordneter Benutzer</th>
           <th></th>
         </tr>
       </thead>
@@ -28,7 +28,7 @@
             <td>{{ c.country }}</td>
             <td>{{ c.user.email if c.user else '—' }}</td>
             <td class="text-end">
-              <a href="{{ url_for('admin.company_detail', company_id=c.id) }}" class="btn btn-sm btn-outline-secondary">Відкрити</a>
+              <a href="{{ url_for('admin.company_detail', company_id=c.id) }}" class="btn btn-sm btn-outline-secondary">Öffnen</a>
             </td>
           </tr>
         {% endfor %}
@@ -36,6 +36,6 @@
     </table>
   </div>
 {% else %}
-  <p>Компаній поки немає.</p>
+  <p>Keine Unternehmen vorhanden.</p>
 {% endif %}
 {% endblock %}

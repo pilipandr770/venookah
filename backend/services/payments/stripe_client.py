@@ -13,17 +13,17 @@ from ...models.payment import Payment
 def _init_stripe():
     api_key = os.getenv("STRIPE_SECRET_KEY", "")
     if not api_key:
-        raise RuntimeError("STRIPE_SECRET_KEY не заданий")
+        raise RuntimeError("STRIPE_SECRET_KEY ist nicht gesetzt")
     stripe.api_key = api_key
 
 
 def create_checkout_session(order: Order, success_url: str, cancel_url: str) -> stripe.checkout.Session:
     """
-    Створює Stripe Checkout Session для замовлення.
+    Erstellt eine Stripe Checkout Session für die Bestellung.
     """
     _init_stripe()
 
-    # Simple: одна позиція – загальна сума
+    # Einfach: eine Position – Gesamtsumme
     session = stripe.checkout.Session.create(
         mode="payment",
         success_url=success_url,
@@ -61,7 +61,7 @@ def create_checkout_session(order: Order, success_url: str, cancel_url: str) -> 
 
 def mark_payment_succeeded(session: dict[str, Any]) -> None:
     """
-    Позначає платежі як успішні на основі webhook payload.
+    Markiert Zahlungen als erfolgreich basierend auf dem Webhook-Payload.
     """
     order_id = session.get("metadata", {}).get("order_id")
     if not order_id:

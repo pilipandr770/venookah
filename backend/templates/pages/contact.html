@@ -1,23 +1,23 @@
 {% extends 'base.html' %}
 
-{% block title %}Контакт — Venookah{% endblock %}
+{% block title %}Kontakt — Venookah{% endblock %}
 
 {% block content %}
 <div class="card mx-auto" style="max-width:900px;">
   <div class="card-body">
-    <h1>Контакт — чат поддержки</h1>
-    <p>Задайте вопрос — наш чат-ассистент (OpenAI) ответит. Если вы предпочитаете живого оператора, используйте email: <a href="mailto:info@venookah.com">info@venookah.com</a></p>
+    <h1>Kontakt — Support-Chat</h1>
+    <p>Stellen Sie eine Frage — unser Chat-Assistent (OpenAI) wird antworten. Wenn Sie einen menschlichen Ansprechpartner bevorzugen, schreiben Sie an: <a href="mailto:info@venookah.com">info@venookah.com</a></p>
 
     <div id="chat" class="border rounded p-3 mb-3" style="height:400px; overflow:auto; background:#0b0b0b; color:#e6ffe6;">
       <!-- messages appear here -->
     </div>
 
     <form id="chatForm" class="d-flex gap-2">
-      <input id="chatInput" class="form-control" placeholder="Напишите сообщение..." autocomplete="off">
-      <button class="btn btn-primary" id="chatSend" type="submit">Отправить</button>
+      <input id="chatInput" class="form-control" placeholder="Nachricht eingeben..." autocomplete="off">
+      <button class="btn btn-primary" id="chatSend" type="submit">Senden</button>
     </form>
 
-    <p class="text-muted small mt-3">Chat uses OpenAI model configured by the administrator.</p>
+    <p class="text-muted small mt-3">Der Chat verwendet ein von den Administratoren konfiguriertes OpenAI-Modell.</p>
   </div>
 </div>
 
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function(){
   const form = document.getElementById('chatForm');
   const input = document.getElementById('chatInput');
 
-  function appendMessage(sender, text){
+    function appendMessage(sender, text){
     const el = document.createElement('div');
     el.className = 'mb-2';
     el.innerHTML = `<strong>${sender}:</strong> <div>${text.replace(/\n/g,'<br>')}</div>`;
@@ -39,9 +39,9 @@ document.addEventListener('DOMContentLoaded', function(){
     e.preventDefault();
     const msg = input.value.trim();
     if(!msg) return;
-    appendMessage('Вы', msg);
+    appendMessage('Sie', msg);
     input.value = '';
-    appendMessage('Ассистент', '<em>печатает...</em>');
+    appendMessage('Assistent', '<em>schreibt...</em>');
 
     try{
       const res = await fetch('{{ url_for('shop_public.chat_api') }}', {
@@ -50,16 +50,16 @@ document.addEventListener('DOMContentLoaded', function(){
         body: JSON.stringify({message: msg})
       });
       const j = await res.json();
-      // remove 'печатает' placeholder
-      const placeholders = Array.from(chat.querySelectorAll('div')).filter(d => d.innerHTML.includes('печатает'));
+      // remove 'schreibt' placeholder
+      const placeholders = Array.from(chat.querySelectorAll('div')).filter(d => d.innerHTML.includes('schreibt'));
       placeholders.forEach(p=>p.remove());
       if(j.reply){
-        appendMessage('Ассистент', j.reply);
+        appendMessage('Assistent', j.reply);
       } else if(j.error){
-        appendMessage('Ассистент', '<span class="text-danger">Ошибка: ' + (j.error || j.detail || 'unknown') + '</span>');
+        appendMessage('Assistent', '<span class="text-danger">Fehler: ' + (j.error || j.detail || 'unknown') + '</span>');
       }
     }catch(err){
-      appendMessage('Ассистент', '<span class="text-danger">Ошибка связи: '+err.message+'</span>');
+      appendMessage('Assistent', '<span class="text-danger">Verbindungsfehler: '+err.message+'</span>');
     }
   });
 });

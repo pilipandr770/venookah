@@ -3,16 +3,16 @@
 {% block title %}AI System Prompt — Admin{% endblock %}
 
 {% block content %}
-<h1>Системная инструкция для чат-ассистента</h1>
+<h1>Systemanweisung für den Chat-Assistenten</h1>
 
 <form method="post">
   <div class="mb-3">
-    <label for="prompt" class="form-label">Инструкция (system prompt)</label>
+    <label for="prompt" class="form-label">Anweisung (System-Prompt)</label>
     <textarea id="prompt" name="prompt" rows="12" class="form-control">{{ prompt }}</textarea>
-    <div class="form-text">Эта инструкция будет использоваться как сообщение system для OpenAI модели при ответах на вопросы пользователей на странице Контакты.</div>
+    <div class="form-text">Diese Anweisung wird als System‑Nachricht an das OpenAI‑Modell verwendet, wenn auf Anfragen auf der Kontaktseite geantwortet wird.</div>
   </div>
-  <button class="btn btn-primary" type="submit">Сохранить</button>
-  <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Отмена</a>
+  <button class="btn btn-primary" type="submit">Speichern</button>
+  <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Abbrechen</a>
 </form>
 
 {% endblock %}

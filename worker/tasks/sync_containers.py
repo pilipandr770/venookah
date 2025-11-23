@@ -1,7 +1,7 @@
 # file: worker/tasks/sync_containers.py
 
 """
-Оновлення статусів морських контейнерів.
+Aktualisierung der Status von Seecontainern.
 """
 
 from backend.extensions import db

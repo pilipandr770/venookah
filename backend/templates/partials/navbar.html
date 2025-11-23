@@ -9,7 +9,7 @@
       data-bs-target="#mainNavbar"
       aria-controls="mainNavbar"
       aria-expanded="false"
-      aria-label="Перемкнути навігацію"
+      aria-label="Navigation umschalten"
     >
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -17,18 +17,18 @@
     <div class="collapse navbar-collapse" id="mainNavbar">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('shop_public.index') }}">Магазин</a>
+          <a class="nav-link" href="{{ url_for('shop_public.index') }}">Shop</a>
         </li>
 
         {% if current_user.is_authenticated and current_user.role in ('admin', 'superadmin') %}
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Адмінка</a>
+            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin</a>
           </li>
         {% endif %}
 
         {% if current_user.is_authenticated and current_user.role in ('warehouse_admin', 'superadmin') %}
           <li class="nav-item">
-            <a class="nav-link" href="/warehouse/">Склад</a>
+            <a class="nav-link" href="/warehouse/">Lager</a>
           </li>
         {% endif %}
       </ul>
@@ -36,25 +36,25 @@
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
         {% if current_user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('shop_public.view_cart') }}">Кошик</a>
+            <a class="nav-link" href="{{ url_for('shop_public.view_cart') }}">Warenkorb</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('shop_account.profile') }}">Профіль</a>
+            <a class="nav-link" href="{{ url_for('shop_account.profile') }}">Profil</a>
           </li>
           <li class="nav-item">
             <span class="navbar-text me-2">
-              Привіт, {{ current_user.first_name or current_user.email }}
+              Hallo, {{ current_user.first_name or current_user.email }}
             </span>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.logout') }}">Вийти</a>
+            <a class="nav-link" href="{{ url_for('auth.logout') }}">Abmelden</a>
           </li>
         {% else %}
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.login') }}">Увійти</a>
+            <a class="nav-link" href="{{ url_for('auth.login') }}">Anmelden</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.register') }}">Реєстрація</a>
+            <a class="nav-link" href="{{ url_for('auth.register') }}">Registrieren</a>
           </li>
         {% endif %}
       </ul>

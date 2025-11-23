@@ -1,9 +1,9 @@
 # file: backend/services/b2b_checks/registry_clients.py
 
 """
-Клієнти до національних реєстрів (Handelsregister, KVK, CVR тощо).
+Clients für nationale Register (Handelsregister, KVK, CVR, etc.).
 
-MVP: заглушка, яка просто повертає is_found=True, якщо є назва компанії.
+MVP: Stub, der `is_found=True` zurückgibt, wenn ein Firmenname vorhanden ist.
 """
 
 from typing import Any

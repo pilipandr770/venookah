@@ -18,7 +18,7 @@ class Company(db.Model):
     address = db.Column(db.String(255), nullable=True)
     postal_code = db.Column(db.String(32), nullable=True)
 
-    # зв'язок із користувачем (B2B)
+    # Verknüpfung zum Benutzer (B2B)
     user_id = db.Column(db.Integer, db.ForeignKey("venookah2.users.id"), nullable=True)
     user = db.relationship("User", backref="company")
 
@@ -44,6 +44,6 @@ class Contact(db.Model):
     email = db.Column(db.String(255), nullable=True)
     phone = db.Column(db.String(64), nullable=True)
 
-    role = db.Column(db.String(128), nullable=True)  # менеджер, байер тощо
+    role = db.Column(db.String(128), nullable=True)  # Manager, Einkäufer, etc.
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)

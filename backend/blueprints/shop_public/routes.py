@@ -40,18 +40,27 @@ def index():
     form = SearchForm()
     products = get_active_products()
 
-    # Поки пошук простий — фільтрація по назві (можемо розширити пізніше)
+    # Suche vorerst einfach — Filterung nach Name (kann später erweitert werden)
     if form.validate_on_submit() and form.query.data:
         q = form.query.data.lower()
         products = [p for p in products if q in p.name.lower()]
 
-    # Розділяємо продукти на табак та вугілля за категоріями
+    # Produkte nach Kategorie in Tabak und Kohle aufteilen
     tobacco_products = []
     coal_products = []
     for p in products:
-        if p.category and ('табак' in p.category.name.lower() or 'tobacco' in p.category.name.lower()):
+        if p.category and (
+            'табак' in p.category.name.lower()
+            or 'tobacco' in p.category.name.lower()
+            or 'tabak' in p.category.name.lower()
+        ):
             tobacco_products.append(p)
-        elif p.category and ('вугілля' in p.category.name.lower() or 'coal' in p.category.name.lower() or 'уголь' in p.category.name.lower()):
+        elif p.category and (
+            'вугілля' in p.category.name.lower()
+            or 'coal' in p.category.name.lower()
+            or 'уголь' in p.category.name.lower()
+            or 'kohle' in p.category.name.lower()
+        ):
             coal_products.append(p)
 
     return render_template("shop/index.html", form=form, products=products, tobacco_products=tobacco_products, coal_products=coal_products)

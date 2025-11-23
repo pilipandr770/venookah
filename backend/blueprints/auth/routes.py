@@ -23,7 +23,7 @@ from .forms import LoginForm, RegisterForm
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        flash("Ви вже увійшли в систему.", "info")
+        flash("Sie sind bereits angemeldet.", "info")
         return redirect(url_for("shop_public.index"))
 
     form = LoginForm()
@@ -32,15 +32,15 @@ def login():
         user = User.query.filter_by(email=email_lower).first()
         if user and user.check_password(form.password.data):
             if not user.is_active:
-                flash("Акаунт деактивовано. Зверніться до адміністратора.", "danger")
+                flash("Konto deaktiviert. Wenden Sie sich an den Administrator.", "danger")
                 return redirect(url_for("auth.login"))
 
             login_user(user, remember=form.remember_me.data)
-            flash("Ви успішно увійшли.", "success")
+            flash("Sie haben sich erfolgreich angemeldet.", "success")
             next_page = request.args.get("next")
             return redirect(next_page or url_for("shop_public.index"))
 
-        flash("Невірний email або пароль.", "danger")
+        flash("Ungültige E-Mail oder Passwort.", "danger")
 
     else:
         print(f"DEBUG: Form not valid. Errors: {form.errors}")
@@ -57,7 +57,7 @@ def register():
     if form.validate_on_submit():
         existing = User.query.filter_by(email=form.email.data.lower()).first()
         if existing:
-            flash("Користувач з таким email вже існує.", "warning")
+            flash("Ein Benutzer mit dieser E-Mail existiert bereits.", "warning")
             return redirect(url_for("auth.register"))
 
         account_type = form.account_type.data
@@ -88,23 +88,23 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        # ---- АВТО-ПЕРЕВІРКА B2B + ДОДАВАННЯ В CRM ----
+        # ---- AUTO-PRÜFUNG B2B + HINZUFÜGEN ZUR CRM ----
         if is_b2b:
-            # 1) B2B-перевірка (VIES + реєстри + OSINT)
+            # 1) B2B-Prüfung (VIES + Register + OSINT)
             result = run_b2b_checks_for_user(user)
 
-            # 2) Створення компанії + базового контакту в CRM
+            # 2) Erstellung der Firma + Hauptkontakt im CRM
             company = get_or_create_company_for_b2b_user(user)
             create_primary_contact_for_company(user, company)
 
-            # 3) Можемо показати коротке повідомлення
+            # 3) Kurze Information anzeigen
             score = result.score if result else "N/A"
             flash(
-                f"Ваш акаунт B2B зареєстровано. Результат перевірки контрагента (score): {score}.",
+                f"Ihr B2B-Konto wurde registriert. Ergebnis der Partnerprüfung (Score): {score}.",
                 "info",
             )
         else:
-            flash("Реєстрація успішна. Тепер увійдіть у систему.", "success")
+            flash("Registrierung erfolgreich. Bitte melden Sie sich nun an.", "success")
 
         return redirect(url_for("auth.login"))
 
@@ -115,7 +115,7 @@ def register():
 @login_required
 def logout():
     logout_user()
-    flash("Ви вийшли з акаунта.", "info")
+    flash("Sie haben sich abgemeldet.", "info")
     return redirect(url_for("shop_public.index"))
 
 
@@ -137,7 +137,7 @@ def delete_account():
     """
     user = User.query.get(current_user.id)
     if not user:
-        flash('Пользователь не найден.', 'warning')
+        flash('Benutzer nicht gefunden.', 'warning')
         return redirect(url_for('shop_public.index'))
 
     # Anonymize personal data
@@ -167,19 +167,19 @@ def delete_account():
 
     # Log the user out after deletion
     logout_user()
-    flash('Ваш аккаунт был удалён (анонимизирован). Если вы хотите восстановить данные, свяжитесь с поддержкой.', 'info')
+    flash('Ihr Konto wurde gelöscht (anonymisiert). Wenn Sie Daten wiederherstellen möchten, kontaktieren Sie den Support.', 'info')
     return redirect(url_for('shop_public.index'))
 
 
 @bp.route("/bootstrap-superadmin", methods=["GET"])
 def bootstrap_superadmin():
     """
-    Одноразовий маршрут для створення SUPERADMIN, якщо ще немає.
-    Використовувати тільки в dev, потім закрити.
+    Ein einmaliger Route zum Erstellen eines SUPERADMIN, falls noch keiner existiert.
+    Nur in der Entwicklung verwenden, danach entfernen.
     """
     existing_superadmin = User.query.filter_by(role=UserRole.SUPERADMIN).first()
     if existing_superadmin:
-        return "Суперадмін вже існує.", 200
+        return "Superadmin existiert bereits.", 200
 
     email = "owner@example.com"
     password = "ChangeMe123!"
@@ -198,4 +198,4 @@ def bootstrap_superadmin():
     db.session.add(user)
     db.session.commit()
 
-    return f"Суперадміна створено: {email} / {password}", 200
+    return f"Superadmin erstellt: {email} / {password}", 200

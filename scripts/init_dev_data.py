@@ -1,7 +1,7 @@
 # file: scripts/init_dev_data.py
 
 """
-Ініціалізація тестових даних: базові категорії + товари (вугілля, тютюн).
+Initialisierung von Testdaten: Grundkategorien + Produkte (Kohle, Tabak).
 """
 
 from decimal import Decimal
@@ -20,7 +20,7 @@ def main():
     with app.app_context():
         db.create_all()
 
-        # Пользователи
+        # Benutzer
         users_data = [
             {"email": "superadmin@example.com", "first_name": "Super", "last_name": "Admin", "role": UserRole.SUPERADMIN, "password": "password"},
             {"email": "admin@example.com", "first_name": "Shop", "last_name": "Admin", "role": UserRole.ADMIN, "password": "password"},
@@ -44,14 +44,14 @@ def main():
         db.session.commit()
 
         # Warehouse Categories
-        w_coal_cat = WarehouseCategory.query.filter_by(name="Вугілля").first()
+        w_coal_cat = WarehouseCategory.query.filter_by(name="Kohle").first()
         if not w_coal_cat:
-            w_coal_cat = WarehouseCategory(name="Вугілля", description="Категорія для вугілля")
+            w_coal_cat = WarehouseCategory(name="Kohle", description="Kategorie für Kohle")
             db.session.add(w_coal_cat)
 
-        w_tobacco_cat = WarehouseCategory.query.filter_by(name="Тютюн").first()
+        w_tobacco_cat = WarehouseCategory.query.filter_by(name="Tabak").first()
         if not w_tobacco_cat:
-            w_tobacco_cat = WarehouseCategory(name="Тютюн", description="Категорія для тютюну")
+            w_tobacco_cat = WarehouseCategory(name="Tabak", description="Kategorie für Tabak")
             db.session.add(w_tobacco_cat)
 
         db.session.commit()
@@ -77,20 +77,20 @@ def main():
 
         db.session.commit()
 
-        # Категорії
+        # Kategorien
         coal_cat = Category.query.filter_by(slug="coal").first()
         if not coal_cat:
-            coal_cat = Category(name="Вугілля", slug="coal")
+            coal_cat = Category(name="Kohle", slug="coal")
             db.session.add(coal_cat)
 
         tobacco_cat = Category.query.filter_by(slug="tobacco").first()
         if not tobacco_cat:
-            tobacco_cat = Category(name="Тютюн для кальянів", slug="tobacco")
+            tobacco_cat = Category(name="Tabak (Shisha)", slug="tobacco")
             db.session.add(tobacco_cat)
 
         db.session.commit()
 
-        # Товари
+        # Produkte
         products_data = [
             {
                 "name": "Venookah Premium Coal 10kg",
@@ -121,7 +121,7 @@ def main():
                 p = Product(
                     name=pdata["name"],
                     slug=pdata["slug"],
-                    description="Demo товар для тестування магазину.",
+                    description="Demo-Produkt zum Testen des Shops.",
                     category=pdata["category"],
                     price_b2c=pdata["price_b2c"],
                     price_b2b=pdata["price_b2b"],
@@ -151,7 +151,7 @@ def main():
             db.session.add(task)
             db.session.commit()
 
-        print("Тестові дані ініціалізовано.")
+        print("Testdaten initialisiert.")
 
 
 if __name__ == "__main__":

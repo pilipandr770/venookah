@@ -1,10 +1,10 @@
 # file: worker/worker.py
 
 """
-Заглушка воркера.
+Worker-Platzhalter.
 
-Пізніше сюди можна підключити RQ / Celery.
-Поки що просто визначимо псевдо-інтерфейс виклику задач.
+Später kann hier RQ / Celery angebunden werden.
+Vorerst definieren wir ein Pseudo-Interface zum Ausführen von Tasks.
 """
 
 from tasks import (
@@ -18,7 +18,7 @@ from tasks import (
 
 def run_all_once():
     """
-    Одноразовий запуск всіх задач (наприклад, з cron).
+    Einmaliger Lauf aller Tasks (z. B. per cron).
     """
     sync_b2b_checks.run()
     sync_shipping_status.run()

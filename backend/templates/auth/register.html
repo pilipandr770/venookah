@@ -1,12 +1,12 @@
 <!-- file: backend/templates/auth/register.html -->
 {% extends "base.html" %}
 
-{% block title %}Реєстрація — Venookah 2.0{% endblock %}
+{% block title %}Registrierung — Venookah 2.0{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-7">
-    <h1 class="mb-4">Реєстрація</h1>
+    <h1 class="mb-4">Registrierung</h1>
     <form method="post">
       {{ form.hidden_tag() }}
 
@@ -62,7 +62,7 @@
 
       <hr class="my-3">
 
-      <h5>Дані компанії (для B2B опціонально)</h5>
+      <h5>Firmendaten (optional für B2B)</h5>
 
       <div class="mb-3">
         {{ form.company_name.label(class="form-label") }}
@@ -104,8 +104,8 @@
       </div>
 
       <p class="mt-3 mb-0">
-        Вже є акаунт?
-        <a href="{{ url_for('auth.login') }}">Увійти</a>
+        Bereits ein Konto?
+        <a href="{{ url_for('auth.login') }}">Anmelden</a>
       </p>
     </form>
   </div>

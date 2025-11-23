@@ -9,10 +9,10 @@ from ..models.user import User
 
 def get_or_create_company_for_b2b_user(user: User) -> Company:
     """
-    Створює або повертає компанію, прив’язану до B2B-користувача.
+    Erstellt oder gibt die Firma zurück, die einem B2B-Benutzer zugeordnet ist.
     """
     if not user.is_b2b:
-        raise ValueError("Користувач не є B2B, CRM-компанія не потрібна")
+        raise ValueError("Der Benutzer ist kein B2B-Kunde, keine CRM-Firma erforderlich")
 
     company = Company.query.filter_by(user_id=user.id).first()
     if company:
@@ -34,7 +34,7 @@ def get_or_create_company_for_b2b_user(user: User) -> Company:
 
 def create_primary_contact_for_company(user: User, company: Company) -> Optional[Contact]:
     """
-    Створює базовий контакт під B2B-користувача (якщо ще немає).
+    Erstellt einen Hauptkontakt für das Unternehmen des B2B-Benutzers (falls noch nicht vorhanden).
     """
     if not user.email:
         return None

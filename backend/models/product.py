@@ -13,7 +13,7 @@ class Category(db.Model):
     name = db.Column(db.String(255), nullable=False)
     slug = db.Column(db.String(255), unique=True, nullable=False)
     description = db.Column(db.Text)
-    image = db.Column(db.String(512))  # URL фото категории
+    image = db.Column(db.String(512))  # URL des Kategorie-Fotos
     parent_id = db.Column(db.Integer, db.ForeignKey("venookah2.categories.id"), nullable=True)
 
     parent = db.relationship("Category", remote_side=[id], backref="children")
@@ -29,7 +29,7 @@ class Category(db.Model):
 
 class Product(db.Model):
     """
-    Товар. У нашому кейсі: вугілля або тютюн для кальянів.
+    Produkt. In unserem Fall: Kohle oder Tabak für Shishas.
     """
 
     __tablename__ = "products"
@@ -44,7 +44,7 @@ class Product(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey("venookah2.categories.id"), nullable=True)
     category = db.relationship("Category", backref="products")
 
-    # ціна для B2C та B2B окремо
+    # Preis für B2C und B2B getrennt
     price_b2c = db.Column(db.Numeric(10, 2), nullable=False, default=0)
     price_b2b = db.Column(db.Numeric(10, 2), nullable=False, default=0)
 
@@ -52,9 +52,9 @@ class Product(db.Model):
 
     is_active = db.Column(db.Boolean, default=True, nullable=False)
 
-    # прості поля для фото
+    # Einfache Felder für Bilder
     main_image_url = db.Column(db.String(512))
-    extra_images = db.Column(db.JSON)  # список URL-ів
+    extra_images = db.Column(db.JSON)  # Liste von URLs
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(

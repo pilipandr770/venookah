@@ -7,7 +7,7 @@ from ..extensions import db
 
 class EmailConfirmationToken(db.Model):
     """
-    Токени підтвердження email (опціонально, на майбутнє).
+    E-Mail-Bestätigungstoken (optional, für die Zukunft).
     """
 
     __tablename__ = "email_confirmation_tokens"

@@ -16,7 +16,7 @@ def create_order(
     is_b2b: bool | None = None,
 ) -> Order:
     """
-    Створює замовлення.
+    Erstellt eine Bestellung.
 
     items = [
         {"product": <Product>, "quantity": 10},
@@ -33,7 +33,7 @@ def create_order(
         is_b2b=is_b2b,
     )
     db.session.add(order)
-    db.session.flush()  # отримати order.id
+    db.session.flush()  # order.id erhalten
 
     total = Decimal("0.00")
 
@@ -61,6 +61,6 @@ def create_order(
 
 def get_orders_for_user(user: User) -> Iterable[Order]:
     """
-    Повертає всі замовлення користувача.
+    Gibt alle Bestellungen des Benutzers zurück.
     """
     return Order.query.filter_by(user_id=user.id).order_by(Order.created_at.desc()).all()

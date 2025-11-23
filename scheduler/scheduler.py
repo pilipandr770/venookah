@@ -1,9 +1,9 @@
 # file: scheduler/scheduler.py
 
 """
-Заглушка планувальника.
+Platzhalter für den Scheduler.
 
-Пізніше можна підключити APScheduler / cron всередині контейнера.
+Später kann APScheduler/cron innerhalb des Containers integriert werden.
 """
 
 from worker.tasks import (

@@ -3,10 +3,10 @@
 import requests
 import json
 
-# Пример payload для payment_intent.succeeded
-# Замени payment_intent_id на реальный из Stripe dashboard или логов
+# Beispiel-Payload für payment_intent.succeeded
+# Ersetze `payment_intent_id` mit einem echten Wert aus dem Stripe-Dashboard oder den Logs
 
-payment_intent_id = "pi_test_..."  # Замени на реальный
+payment_intent_id = "pi_test_..."  # Ersetze mit echtem Wert
 
 payload = {
     "id": "evt_test",

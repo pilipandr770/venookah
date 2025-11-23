@@ -15,9 +15,9 @@ from .extensions import init_extensions
 
 def create_app() -> Flask:
     """
-    Фабрика Flask-додатку для Venookah2.
+    Flask-Anwendungsfabrik für Venookah2.
     """
-    # Завантажуємо .env (для локальної розробки)
+    # Lade .env (für lokale Entwicklung)
     load_dotenv()
 
     app = Flask(__name__, instance_relative_config=False)
@@ -95,7 +95,7 @@ def create_app() -> Flask:
 
 
 def setup_logging(app: Flask) -> None:
-    """Налаштування базового логування."""
+    """Grundlegende Logging-Konfiguration."""
     log_level = app.config.get("LOG_LEVEL", "INFO").upper()
     logging.basicConfig(
         level=log_level,
@@ -106,7 +106,7 @@ def setup_logging(app: Flask) -> None:
 
 def register_blueprints(app: Flask) -> None:
     """
-    Реєструємо blueprints.
+    Registriere Blueprints.
     """
     from .blueprints.shop_public import bp as shop_public_bp
     from .blueprints.auth import bp as auth_bp

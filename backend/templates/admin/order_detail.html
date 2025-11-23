@@ -1,20 +1,20 @@
 <!-- file: backend/templates/admin/order_detail.html -->
 {% extends "base.html" %}
 
-{% block title %}Замовлення #{{ order.id }} — Адмінка{% endblock %}
+{% block title %}Bestellung #{{ order.id }} — Admin{% endblock %}
 
 {% block content %}
-<h1 class="mb-3">Замовлення #{{ order.id }}</h1>
+<h1 class="mb-3">Bestellung #{{ order.id }}</h1>
 
 <div class="mb-3">
-  <strong>Користувач:</strong> {{ order.user.email }}<br>
-  <strong>Статус:</strong> {{ order.status }}<br>
-  <strong>Сума:</strong> {{ order.total_amount }} {{ order.currency }}<br>
-  <strong>B2B:</strong> {% if order.is_b2b %}так{% else %}ні{% endif %}<br>
-  <strong>Створено:</strong> {{ order.created_at }}
+  <strong>Benutzer:</strong> {{ order.user.email }}<br>
+  <strong>Status:</strong> {{ order.status }}<br>
+  <strong>Betrag:</strong> {{ order.total_amount }} {{ order.currency }}<br>
+  <strong>B2B:</strong> {% if order.is_b2b %}Ja{% else %}Nein{% endif %}<br>
+  <strong>Erstellt:</strong> {{ order.created_at }}
 </div>
 
-<h4>Позиції</h4>
+<h4>Positionen</h4>
 {% if order.items %}
   <ul class="list-group mb-3">
     {% for item in order.items %}
@@ -30,20 +30,20 @@
     {% endfor %}
   </ul>
 {% else %}
-  <p>Позицій немає.</p>
+  <p>Keine Positionen.</p>
 {% endif %}
 
-<h4>Платежі</h4>
+<h4>Zahlungen</h4>
 {% if payments %}
   <div class="table-responsive">
     <table class="table table-sm align-middle">
       <thead>
         <tr>
           <th>ID</th>
-          <th>Провайдер</th>
-          <th>Статус</th>
-          <th>Сума</th>
-          <th>Дата</th>
+          <th>Provider</th>
+          <th>Status</th>
+          <th>Betrag</th>
+          <th>Datum</th>
         </tr>
       </thead>
       <tbody>
@@ -60,8 +60,8 @@
     </table>
   </div>
 {% else %}
-  <p>Платежів поки немає.</p>
+  <p>Noch keine Zahlungen.</p>
 {% endif %}
 
-<a href="{{ url_for('admin.orders_list') }}" class="btn btn-secondary mt-3">Назад до списку</a>
+<a href="{{ url_for('admin.orders_list') }}" class="btn btn-secondary mt-3">Zurück zur Liste</a>
 {% endblock %}

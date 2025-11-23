@@ -1,7 +1,7 @@
 <!-- file: backend/templates/admin/product_form.html -->
 {% extends "base.html" %}
 
-{% block title %}{{ title }} — Адмінка{% endblock %}
+{% block title %}{{ title }} — Admin{% endblock %}
 
 {% block content %}
 <h1 class="mb-4">{{ title }}</h1>
@@ -75,7 +75,7 @@
   </div>
 
   <button type="submit" class="btn btn-success">{{ form.submit.label.text }}</button>
-  <a href="{{ url_for('admin.products_list') }}" class="btn btn-secondary">Назад</a>
+  <a href="{{ url_for('admin.products_list') }}" class="btn btn-secondary">Zurück</a>
 </form>
 
 <script>

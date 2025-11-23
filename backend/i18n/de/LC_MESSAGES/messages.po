@@ -1,0 +1,19 @@
+# German translations for Venookah2
+# Created as a scaffold. Use `pybabel extract` and `pybabel init` to populate.
+
+msgid ""
+msgstr ""
+"Project-Id-Version: Venookah2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-23 00:00+0000\n"
+"PO-Revision-Date: 2025-11-23 00:00+0000\n"
+"Last-Translator: you <you@example.com>\n"
+"Language-Team: German\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# Examples
+# msgid "Hello"
+# msgstr "Hallo"

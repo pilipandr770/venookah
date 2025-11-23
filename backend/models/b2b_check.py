@@ -7,7 +7,7 @@ from ..extensions import db
 
 class B2BCheckResult(db.Model):
     """
-    Результати перевірки B2B-клієнта (VAT, реєстри, санкції).
+    Ergebnisse der Prüfung eines B2B-Kunden (USt-ID, Register, Sanktionen).
     """
 
     __tablename__ = "b2b_check_results"

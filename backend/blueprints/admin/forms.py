@@ -33,23 +33,23 @@ def validate_unique_slug(model, exclude_id=None):
         if exclude_id:
             query = query.filter(model.id != exclude_id)
         if query.first():
-            raise ValidationError(f"Slug '{field.data}' вже використовується.")
+            raise ValidationError(f"Slug '{field.data}' wird bereits verwendet.")
     return _validate_unique_slug
 
 
 class CategoryForm(FlaskForm):
     name = StringField(
-        "Назва категорії",
+        "Name der Kategorie",
         validators=[DataRequired(), Length(max=255)],
     )
     slug = StringField(
-        "Slug (URL-ідентифікатор)",
+        "Slug (URL-Kennung)",
         validators=[DataRequired(), Length(max=255)],
     )
-    description = TextAreaField("Опис", validators=[Optional()])
-    image = FileField("Фото категорії", validators=[Optional()])
-    parent_id = SelectField("Батьківська категорія", coerce=int, validators=[Optional()])
-    submit = SubmitField("Зберегти")
+    description = TextAreaField("Beschreibung", validators=[Optional()])
+    image = FileField("Kategorienbild", validators=[Optional()])
+    parent_id = SelectField("Übergeordnete Kategorie", coerce=int, validators=[Optional()])
+    submit = SubmitField("Speichern")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -59,30 +59,30 @@ class CategoryForm(FlaskForm):
 
 class ProductForm(FlaskForm):
     name = StringField(
-        "Назва товару",
+        "Produktname",
         validators=[DataRequired(), Length(max=255)],
     )
     slug = StringField(
-        "Slug (URL-ідентифікатор)",
+        "Slug (URL-Kennung)",
         validators=[DataRequired(), Length(max=255)],
     )
-    description = TextAreaField("Опис", validators=[Optional()])
+    description = TextAreaField("Beschreibung", validators=[Optional()])
 
     category_id = SelectField(
-        "Категорія",
+        "Kategorie",
         coerce=int,
         validators=[Optional()],
     )
 
     price_b2c = DecimalField(
-        "Ціна B2C",
+        "Preis B2C",
         default=Decimal("0.00"),
         places=2,
         rounding=None,
         validators=[DataRequired(), NumberRange(min=0)],
     )
     price_b2b = DecimalField(
-        "Ціна B2B",
+        "Preis B2B",
         default=Decimal("0.00"),
         places=2,
         rounding=None,
@@ -90,16 +90,16 @@ class ProductForm(FlaskForm):
     )
 
     currency = StringField(
-        "Валюта",
+        "Währung",
         default="EUR",
         validators=[DataRequired(), Length(max=8)],
     )
 
-    is_active = BooleanField("Активний", default=True)
+    is_active = BooleanField("Aktiv", default=True)
 
-    main_image = FileField("Головне фото", validators=[Optional()])
+    main_image = FileField("Hauptbild", validators=[Optional()])
 
-    submit = SubmitField("Зберегти")
+    submit = SubmitField("Speichern")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

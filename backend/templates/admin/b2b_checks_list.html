@@ -1,26 +1,26 @@
 <!-- file: backend/templates/admin/b2b_checks_list.html -->
 {% extends "base.html" %}
 
-{% block title %}B2B-перевірки — CRM{% endblock %}
+{% block title %}B2B-Prüfungen — CRM{% endblock %}
 
 {% block content %}
-<h1 class="mb-3">Останні B2B-перевірки</h1>
+<h1 class="mb-3">Letzte B2B-Prüfungen</h1>
 
 {% if checks %}
   <div class="table-responsive">
     <table class="table table-sm align-middle">
       <thead>
-        <tr>
+          <tr>
           <th>ID</th>
-          <th>Користувач</th>
-          <th>Компанія</th>
+          <th>Benutzer</th>
+          <th>Unternehmen</th>
           <th>VAT</th>
-          <th>Країна</th>
-          <th>Valid VAT</th>
-          <th>In Registry</th>
-          <th>Sanctioned</th>
+          <th>Land</th>
+          <th>Gültige USt-ID</th>
+          <th>Im Register</th>
+          <th>Sanktioniert</th>
           <th>Score</th>
-          <th>Дата</th>
+          <th>Datum</th>
         </tr>
       </thead>
       <tbody>
@@ -42,6 +42,6 @@
     </table>
   </div>
 {% else %}
-  <p>Ще немає перевірок.</p>
+  <p>Noch keine Prüfungen.</p>
 {% endif %}
 {% endblock %}

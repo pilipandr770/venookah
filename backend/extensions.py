@@ -1,13 +1,13 @@
 # file: backend/extensions.py
 
-from flask import current_app
+from flask import current_app, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_babel import Babel
 from sqlalchemy import text
 
-# Ініціалізація об'єктів розширень (без app)
+# Initialisierung der Extension-Objekte (ohne App)
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
@@ -37,7 +37,7 @@ def _ensure_schema_exists():
 
 
 def init_extensions(app):
-    """Підключаємо розширення до Flask-додатку."""
+    """Binde Erweiterungen an die Flask-Anwendung."""
     db.init_app(app)
 
     with app.app_context():
@@ -49,12 +49,27 @@ def init_extensions(app):
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
     login_manager.login_message_category = "warning"
-
     babel.init_app(app)
 
-    # Щоб Flask-Login знав, як завантажувати користувача
+    # Damit Flask-Login weiß, wie ein Benutzer geladen wird
     from .models.user import User  # noqa: WPS433,F401
 
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
+
+
+@babel.localeselector
+def get_locale():
+    """Wählt Locale basierend auf `?lang=` oder Accept-Language, Fallback auf config."""
+    supported = current_app.config.get("SUPPORTED_LANGUAGES", ["de", "en"])
+    # allow explicit override via query param (useful for QA)
+    lang = request.args.get("lang")
+    if lang and lang in supported:
+        return lang
+
+    match = request.accept_languages.best_match(supported)
+    if match:
+        return match
+
+    return current_app.config.get("BABEL_DEFAULT_LOCALE", "de")

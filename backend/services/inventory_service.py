@@ -9,15 +9,15 @@ from ..models.product import Product
 
 def get_stock_for_product(product_id: int) -> Optional[StockItem]:
     """
-    Повертає запис складу для товару або None.
+    Gibt den Lagerdatensatz für ein Produkt zurück oder None.
     """
     return StockItem.query.filter_by(product_id=product_id).first()
 
 
 def ensure_stock_item(product: Product, location: str | None = None) -> StockItem:
     """
-    Гарантує, що для товару існує запис у складі.
-    Якщо немає — створює з нульовим залишком.
+    Stellt sicher, dass ein Lagerdatensatz für das Produkt existiert.
+    Falls nicht vorhanden, wird ein Eintrag mit Nullbestand angelegt.
     """
     stock = StockItem.query.filter_by(product_id=product.id).first()
     if not stock:
@@ -34,8 +34,8 @@ def ensure_stock_item(product: Product, location: str | None = None) -> StockIte
 
 def adjust_stock(product: Product, delta_quantity: int) -> StockItem:
     """
-    Коригує кількість товару на складі на delta_quantity.
-    Може бути як додатна, так і від’ємна.
+    Passt die Menge des Produkts im Lager um `delta_quantity` an.
+    Kann positiv oder negativ sein.
     """
     stock = ensure_stock_item(product)
     stock.quantity_total = (stock.quantity_total or 0) + delta_quantity
