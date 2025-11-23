@@ -46,6 +46,7 @@ class RegisterForm(FlaskForm):
     first_name = StringField("Ім'я", validators=[Optional(), Length(max=120)])
     last_name = StringField("Прізвище", validators=[Optional(), Length(max=120)])
     company_name = StringField("Компанія", validators=[Optional(), Length(max=255)])
+    company_website = StringField("Website", validators=[Optional(), Length(max=255)])
     vat_number = StringField("VAT номер", validators=[Optional(), Length(max=64)])
     handelsregister = StringField("Handelsregister", validators=[Optional(), Length(max=64)])
     country = StringField("Країна", validators=[Optional(), Length(max=64)])

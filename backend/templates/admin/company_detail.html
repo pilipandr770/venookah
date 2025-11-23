@@ -41,6 +41,16 @@
             <td>{% if r.is_sanctioned %}⚠️{% else %}✅{% endif %}</td>
             <td>{{ r.score }}</td>
           </tr>
+          {% if r.screenshot_path %}
+            <tr>
+              <td colspan="7">
+                <strong>Website-Snapshot:</strong>
+                <a href="{{ r.screenshot_path }}" target="_blank">
+                  <img src="{{ r.screenshot_path }}" alt="Snapshot" style="max-height:200px;">
+                </a>
+              </td>
+            </tr>
+          {% endif %}
         {% endfor %}
       </tbody>
     </table>

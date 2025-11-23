@@ -12,6 +12,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 from ...extensions import db
 from ...models.user import User, UserRole
 from ...services.b2b_checks.b2b_service import run_b2b_checks_for_user
+import threading
 from ...services.crm_service import (
     get_or_create_company_for_b2b_user,
     create_primary_contact_for_company,
@@ -73,6 +74,7 @@ def register():
             first_name=form.first_name.data or None,
             last_name=form.last_name.data or None,
             company_name=form.company_name.data or None,
+            company_website=form.company_website.data or None,
             vat_number=form.vat_number.data or None,
             handelsregister=form.handelsregister.data or None,
             country=form.country.data or None,
@@ -90,17 +92,24 @@ def register():
 
         # ---- AUTO-PRÜFUNG B2B + HINZUFÜGEN ZUR CRM ----
         if is_b2b:
-            # 1) B2B-Prüfung (VIES + Register + OSINT)
-            result = run_b2b_checks_for_user(user)
+            # 1) Start B2B-Prüfung in Hintergrund (VIES + Register + OSINT/screenshot)
+            # Running in a background thread avoids blocking the registration request
+            try:
+                threading.Thread(target=run_b2b_checks_for_user, args=(user,), daemon=True).start()
+            except Exception:
+                # If background thread fails, run synchronously as fallback
+                try:
+                    result = run_b2b_checks_for_user(user)
+                except Exception:
+                    result = None
 
             # 2) Erstellung der Firma + Hauptkontakt im CRM
             company = get_or_create_company_for_b2b_user(user)
             create_primary_contact_for_company(user, company)
 
             # 3) Kurze Information anzeigen
-            score = result.score if result else "N/A"
             flash(
-                f"Ihr B2B-Konto wurde registriert. Ergebnis der Partnerprüfung (Score): {score}.",
+                "Ihr B2B-Konto wurde registriert. Partnerprüfung läuft im Hintergrund; sehen Sie die Ergebnisse im Adminbereich.",
                 "info",
             )
         else:

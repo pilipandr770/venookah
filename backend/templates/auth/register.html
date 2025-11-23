@@ -70,6 +70,11 @@
       </div>
 
       <div class="mb-3">
+        {{ form.company_website.label(class="form-label") }}
+        {{ form.company_website(class="form-control", placeholder="https://example.com") }}
+      </div>
+
+      <div class="mb-3">
         {{ form.vat_number.label(class="form-label") }}
         {{ form.vat_number(class="form-control") }}
       </div>

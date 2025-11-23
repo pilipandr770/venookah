@@ -1,6 +1,7 @@
 # file: backend/services/b2b_checks/b2b_service.py
 
 from typing import Optional
+import json
 
 from ...extensions import db
 from ...models.b2b_check import B2BCheckResult
@@ -35,6 +36,7 @@ def run_b2b_checks_for_user(user: User) -> Optional[B2BCheckResult]:
     osint_res = check_sanctions(
         vat_number=vat_number,
         company_name=user.company_name,
+        website=getattr(user, 'company_website', None),
     )
 
     is_valid_vat = bool(vies_res.get("is_valid"))
@@ -61,8 +63,78 @@ def run_b2b_checks_for_user(user: User) -> Optional[B2BCheckResult]:
         raw_vies=vies_res,
         raw_registry=registry_res,
         raw_osint=osint_res,
+        screenshot_path=osint_res.get('screenshot'),
         score=score,
     )
     db.session.add(result)
     db.session.commit()
+
+    # If problems detected, create an admin alert for review (do not block flow)
+    try:
+        problems = []
+        if is_sanctioned:
+            problems.append('sanctioned')
+        if not is_valid_vat:
+            problems.append('invalid_vat')
+        if not is_company_found:
+            problems.append('not_in_registry')
+        if score is not None and score < 50:
+            problems.append('low_score')
+
+        if problems:
+            from datetime import datetime
+            payload = {
+                'user_id': user.id,
+                'problems': problems,
+                'score': score,
+                'raw_vies': vies_res,
+                'raw_registry': registry_res,
+                'raw_osint': osint_res,
+            }
+
+            # Insert into existing alerts table. Use textual JSON if needed.
+            try:
+                db.session.execute(
+                    """
+                    INSERT INTO alerts (type, channel, target, payload, is_sent, created_at)
+                    VALUES (:type, :channel, :target, :payload, :is_sent, :created_at)
+                    """,
+                    {
+                        'type': 'b2b_check',
+                        'channel': 'admin',
+                        'target': None,
+                        'payload': json.dumps(payload),
+                        'is_sent': False,
+                        'created_at': datetime.utcnow(),
+                    },
+                )
+                db.session.commit()
+            except Exception:
+                # fallback: try inserting payload as string
+                try:
+                    db.session.rollback()
+                    db.session.execute(
+                        """
+                        INSERT INTO alerts (type, channel, target, payload, is_sent, created_at)
+                        VALUES (:type, :channel, :target, :payload, :is_sent, :created_at)
+                        """,
+                        {
+                            'type': 'b2b_check',
+                            'channel': 'admin',
+                            'target': None,
+                            'payload': str(payload),
+                            'is_sent': False,
+                            'created_at': datetime.utcnow(),
+                        },
+                    )
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+    except Exception:
+        # Never raise to caller — B2B checks mustn't break registration
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+
     return result

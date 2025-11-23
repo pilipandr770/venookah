@@ -89,7 +89,7 @@ async def handle_text(message: types.Message):
             await message.answer(f"Fehler bei der AI-Anfrage: {body[:1000]}")
             return
         j = resp.json()
-        reply = j.get('reply') or j.get('error') or 'No reply'
+        reply = j.get('reply') or j.get('error') or 'Keine Antwort'
         await message.answer(reply)
     except requests.exceptions.RequestException as e:
         await message.answer(f"Fehler bei der AI-Anfrage: {str(e)}")
@@ -148,7 +148,7 @@ async def handle_voice(message: types.Message):
             await message.answer(f"Fehler bei der AI-Anfrage: {body[:1000]}")
             return
         j = resp.json()
-        await message.answer(j.get('reply') or j.get('error') or 'No reply')
+        await message.answer(j.get('reply') or j.get('error') or 'Keine Antwort')
     except requests.exceptions.RequestException as e:
         await message.answer(f"Fehler bei der AI-Anfrage: {str(e)}")
     except Exception as e:

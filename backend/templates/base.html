@@ -61,7 +61,7 @@
     <script>
       // expose auth state to front-end
       window.VENOOKAH = window.VENOOKAH || {};
-      window.VENOOKAH.isAuthenticated = {{ 'true' if current_user.is_authenticated else 'false' }};
+      window.VENOOKAH.isAuthenticated = {{ current_user.is_authenticated|tojson }};
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

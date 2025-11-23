@@ -31,5 +31,6 @@ class B2BCheckResult(db.Model):
     raw_osint = db.Column(db.JSON, nullable=True)
 
     score = db.Column(db.Integer, nullable=True)  # 0–100
+    screenshot_path = db.Column(db.String(512), nullable=True)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)

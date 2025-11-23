@@ -39,6 +39,7 @@ class User(db.Model, UserMixin):
     first_name = db.Column(db.String(120))
     last_name = db.Column(db.String(120))
     company_name = db.Column(db.String(255))
+    company_website = db.Column(db.String(255))
     phone = db.Column(db.String(64))
 
     # Benutzertyp (siehe UserRole)
