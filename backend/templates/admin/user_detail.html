@@ -5,6 +5,14 @@
 
 {% block content %}
 <h1 class="mb-3">Benutzer: {{ user.email }}</h1>
+<div class="mb-2">
+  {% if user.is_b2b %}
+    <div class="d-flex g-2 align-items-center">
+      <button id="b2b-check-ajax-btn" type="button" class="btn btn-sm btn-outline-primary">Manuelle B2B-Prüfung (AJAX)</button>
+      <span id="b2b-check-ajax-status" class="ms-2 text-muted small"></span>
+    </div>
+  {% endif %}
+</div>
 
 <div class="mb-3">
   <strong>Vorname:</strong> {{ user.first_name or '—' }}<br>
@@ -50,4 +58,116 @@
 {% else %}
   <p>Noch keine Bestellungen.</p>
 {% endif %}
+
+<div id="b2b-checks-fragment">
+  {% include 'admin/_b2b_checks_fragment.html' with context %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  var btn = document.getElementById('b2b-check-ajax-btn');
+  var status = document.getElementById('b2b-check-ajax-status');
+  if (!btn) return;
+  btn.addEventListener('click', function(){
+    btn.disabled = true;
+    status.textContent = 'Prüfung gestartet...';
+
+    // Helper: fetch latest timestamp (ISO) or null
+    function fetchLatest(){
+      return fetch('{{ url_for("admin.user_b2b_checks_status", user_id=user.id) }}')
+        .then(function(r){ return r.json(); })
+        .then(function(j){ return j.latest; })
+        .catch(function(){ return null; });
+    }
+
+    // First read current latest timestamp so we can detect new checks
+    fetchLatest().then(function(startLatest){
+      // Start the background job
+      fetch('{{ url_for("admin.user_b2b_check_json", user_id=user.id) }}', {method: 'POST', headers: {'X-Requested-With':'XMLHttpRequest'}})
+        .then(function(resp){
+          if (!resp.ok) throw new Error('Fehler beim Starten');
+          return resp.json();
+        })
+        .then(function(){
+          // Poll status endpoint until a newer timestamp appears
+          var attempts = 0;
+          var maxAttempts = 30; // ~60s
+          var interval = setInterval(function(){
+            attempts += 1;
+            fetchLatest().then(function(latest){
+              // If latest is present and either startLatest was null or latest > startLatest
+              if (latest) {
+                var latestDate = new Date(latest);
+                var startDate = startLatest ? new Date(startLatest) : null;
+                if (!startDate || latestDate.getTime() > startDate.getTime() || attempts >= maxAttempts) {
+                  // New result likely available — fetch fragment once and stop
+                  fetch('{{ url_for("admin.user_b2b_checks_fragment", user_id=user.id) }}')
+                    .then(function(r){ return r.text(); })
+                    .then(function(html){
+                      document.getElementById('b2b-checks-fragment').innerHTML = html;
+                      clearInterval(interval);
+                      btn.disabled = false;
+                      status.textContent = 'Fertig.';
+                    })
+                    .catch(function(){
+                      clearInterval(interval);
+                      btn.disabled = false;
+                      status.textContent = 'Fehler beim Laden der Ergebnisse.';
+                    });
+                } else {
+                  status.textContent = 'Warte auf neue Prüfung (Versuch ' + attempts + ')...';
+                }
+              } else {
+                // still no result
+                if (attempts >= maxAttempts) {
+                  clearInterval(interval);
+                  btn.disabled = false;
+                  status.textContent = 'Zeitüberschreitung beim Abrufen.';
+                } else {
+                  status.textContent = 'Warte auf Ergebnisse... (Versuch ' + attempts + ')';
+                }
+              }
+            });
+          }, 2000);
+        })
+        .catch(function(){
+          btn.disabled = false;
+          status.textContent = 'Fehler beim Starten der Prüfung.';
+        });
+    });
+  });
+});
+</script>
+<!-- Screenshot modal -->
+<div class="modal fade" id="screenshotModal" tabindex="-1" aria-labelledby="screenshotModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="screenshotModalLabel">Website Screenshot</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="screenshotModalImg" src="" alt="screenshot" style="max-width:100%; height:auto; border:1px solid #ddd;" />
+      </div>
+      <div class="modal-footer">
+        <a id="screenshotModalOpen" class="btn btn-primary" href="#" target="_blank">Öffnen</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  var modal = document.getElementById('screenshotModal');
+  modal.addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget;
+    var src = button.getAttribute('data-src') || '';
+    var img = document.getElementById('screenshotModalImg');
+    var open = document.getElementById('screenshotModalOpen');
+    img.src = src;
+    open.href = src;
+  });
+});
+</script>
 {% endblock %}

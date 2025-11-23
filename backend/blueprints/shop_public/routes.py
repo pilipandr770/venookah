@@ -574,7 +574,9 @@ def checkout():
         intent = stripe.PaymentIntent.create(
             amount=total_cents,
             currency=order.currency.lower(),
-            metadata={'order_id': order.id}
+            metadata={'order_id': order.id},
+            # Allow card and SEPA Direct Debit (IBAN) payment methods
+            payment_method_types=['card', 'sepa_debit']
         )
 
         order.stripe_payment_intent_id = intent.id

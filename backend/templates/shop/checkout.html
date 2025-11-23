@@ -31,10 +31,30 @@
         <div class="card-body">
           <h5 class="card-title">Zahlung</h5>
           <form id="payment-form">
-            <div id="card-element">
-              <!-- A Stripe Element will be inserted here. -->
+            <div class="mb-2">
+              <label class="me-3"><input type="radio" name="method" value="card" checked> Karte</label>
+              <label><input type="radio" name="method" value="sepa"> SEPA (IBAN)</label>
             </div>
-            <div id="card-errors" role="alert"></div>
+
+            <div id="card-container">
+              <div id="card-element">
+                <!-- A Stripe Card Element will be inserted here. -->
+              </div>
+              <div id="card-errors" role="alert"></div>
+            </div>
+
+            <div id="sepa-container" style="display:none;">
+              <div class="mb-2">
+                <label for="sepa-name" class="form-label">Name (wie auf dem Bankkonto)</label>
+                <input id="sepa-name" class="form-control" placeholder="Vorname Nachname">
+              </div>
+              <div id="iban-element">
+                <!-- A Stripe IBAN Element will be inserted here. -->
+              </div>
+              <div id="sepa-errors" role="alert" class="text-danger small mt-2"></div>
+              <p class="small text-muted mt-2">Mit der Zahlung per SEPA erteilen Sie dem Verkäufer ein SEPA-Lastschriftmandat. Es kann bis zu 14 Tage dauern, bis die Rückerstattung verarbeitet wird.</p>
+            </div>
+
             <button id="submit" class="btn btn-success w-100 mt-3">Bezahlen</button>
           </form>
         </div>
@@ -48,25 +68,84 @@
     const card = elements.create('card');
     card.mount('#card-element');
 
+    // Create an IBAN element for SEPA Direct Debit
+    let iban = null;
+    try {
+      iban = elements.create('iban', { supportedCountries: ['SEPA'] });
+      iban.mount('#iban-element');
+    } catch (e) {
+      // Some Stripe versions or environments may not support IBAN element; ignore silently
+      console.warn('IBAN element not available', e);
+    }
+
     const form = document.getElementById('payment-form');
     const submitButton = document.getElementById('submit');
     const errorElement = document.getElementById('card-errors');
 
+    function selectedMethod() {
+      const r = document.querySelector('input[name="method"]:checked');
+      return r ? r.value : 'card';
+    }
+
+    // Toggle UI when payment method changes
+    const radios = document.querySelectorAll('input[name="method"]');
+    radios.forEach(r => r.addEventListener('change', () => {
+      const m = selectedMethod();
+      if (m === 'sepa') {
+        document.getElementById('card-container').style.display = 'none';
+        document.getElementById('sepa-container').style.display = 'block';
+      } else {
+        document.getElementById('card-container').style.display = 'block';
+        document.getElementById('sepa-container').style.display = 'none';
+      }
+    }));
+
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       submitButton.disabled = true;
+      const method = selectedMethod();
 
-      const { error } = await stripe.confirmCardPayment('{{ client_secret }}', {
-        payment_method: {
-          card: card,
+      if (method === 'card') {
+        const { error } = await stripe.confirmCardPayment('{{ client_secret }}', {
+          payment_method: { card: card }
+        });
+        if (error) {
+          errorElement.textContent = error.message;
+          submitButton.disabled = false;
+        } else {
+          window.location.href = '{{ url_for("shop_account.profile") }}';
         }
-      });
+        return;
+      }
 
-      if (error) {
-        errorElement.textContent = error.message;
+      // SEPA flow
+      const sepaName = document.getElementById('sepa-name').value || '';
+      const sepaErrors = document.getElementById('sepa-errors');
+      sepaErrors.textContent = '';
+      if (!iban) {
+        sepaErrors.textContent = 'SEPA-Zahlungen sind in dieser Umgebung nicht verfügbar.';
         submitButton.disabled = false;
-      } else {
-        window.location.href = '{{ url_for("shop_account.profile") }}';
+        return;
+      }
+
+      try {
+        const res = await stripe.confirmSepaDebitPayment('{{ client_secret }}', {
+          payment_method: {
+            sepa_debit: iban,
+            billing_details: { name: sepaName }
+          }
+        });
+
+        if (res.error) {
+          sepaErrors.textContent = res.error.message || 'Zahlung fehlgeschlagen.';
+          submitButton.disabled = false;
+        } else {
+          // Payment succeeded or is processing
+          window.location.href = '{{ url_for("shop_account.profile") }}';
+        }
+      } catch (e) {
+        sepaErrors.textContent = e.message || 'Unbekannter Fehler';
+        submitButton.disabled = false;
       }
     });
   </script>

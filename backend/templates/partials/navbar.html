@@ -22,7 +22,11 @@
 
         {% if current_user.is_authenticated and current_user.role in ('admin', 'superadmin') %}
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin</a>
+            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin
+              {% if alerts_count and alerts_count > 0 %}
+                <span class="badge bg-danger ms-1">{{ alerts_count }}</span>
+              {% endif %}
+            </a>
           </li>
         {% endif %}
 

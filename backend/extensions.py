@@ -66,6 +66,29 @@ def init_extensions(app):
     def load_user(user_id):
         return User.query.get(int(user_id))
 
+    # Inject alerts count into template context for admin UI (defensive)
+    try:
+        from .models.alert import Alert  # noqa: WPS433,F401
+
+        @app.context_processor
+        def inject_alerts_count():
+            try:
+                # Count unsent alerts to show a badge in the navbar
+                cnt = 0
+                try:
+                    cnt = Alert.query.filter_by(is_sent=False).count()
+                except Exception:
+                    # Some local setups (SQLite without schema) may fail; swallow errors
+                    cnt = 0
+                return {'alerts_count': cnt}
+            except Exception:
+                return {'alerts_count': 0}
+    except Exception:
+        # If importing Alert fails (missing models/migrations), don't break startup
+        @app.context_processor
+        def inject_alerts_count():
+            return {'alerts_count': 0}
+
 
 def get_locale():
     """Wählt Locale basierend auf `?lang=` oder Accept-Language, Fallback auf config."""

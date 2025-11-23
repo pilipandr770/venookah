@@ -1,0 +1,25 @@
+{# Partial: backend/templates/admin/_b2b_checks_fragment.html #}
+{% if b2b_checks %}
+  <div class="list-group" id="b2b-checks-list">
+    {% for c in b2b_checks %}
+      <div class="list-group-item">
+        <div class="d-flex w-100 justify-content-between">
+          <h5 class="mb-1">Prüfung: {{ c.created_at.strftime('%Y-%m-%d %H:%M') }}</h5>
+          <small>Score: {{ c.score or '—' }}</small>
+        </div>
+        <p class="mb-1 small">
+          VAT: {% if c.is_valid_vat %}<span class="text-success">Gültig</span>{% elif c.is_valid_vat is not none %}<span class="text-danger">Ungültig</span>{% else %}<span class="text-muted">—</span>{% endif %}
+          &nbsp;|&nbsp; Registry: {% if c.is_company_found %}<span class="text-success">Gefunden</span>{% elif c.is_company_found is not none %}<span class="text-warning">Nicht gefunden</span>{% else %}<span class="text-muted">—</span>{% endif %}
+          &nbsp;|&nbsp; Sanctions: {% if c.is_sanctioned %}<span class="text-danger">Ja</span>{% elif c.is_sanctioned is not none %}<span class="text-success">Nein</span>{% else %}<span class="text-muted">—</span>{% endif %}
+        </p>
+        {% if c.screenshot_path %}
+          <div class="mt-2">
+            <a href="{{ c.screenshot_path }}" target="_blank"><img src="{{ c.screenshot_path }}" alt="screenshot" style="max-width:240px; border:1px solid #ddd;"/></a>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">Keine B2B-Prüfungen vorhanden.</p>
+{% endif %}

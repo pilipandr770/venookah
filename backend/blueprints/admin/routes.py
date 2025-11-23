@@ -22,6 +22,7 @@ from ...models.payment import Payment
 from ...models.warehouse import WarehouseTask
 from ...models.crm import Company
 from ...models.b2b_check import B2BCheckResult
+from ...models.alert import Alert
 from . import bp
 from .forms import CategoryForm, ProductForm, slugify
 from .services import get_admin_dashboard_data
@@ -482,6 +483,108 @@ def b2b_checks_list():
     return render_template("admin/b2b_checks_list.html", checks=checks)
 
 
+@bp.route('/alerts')
+@admin_required
+def alerts_list():
+    """List recent alerts for admin review. Supports optional `type` filter via querystring."""
+    import json
+
+    # Read filters and pagination params
+    alert_type = request.args.get('type')
+    is_sent = request.args.get('is_sent')
+    date_from = request.args.get('date_from')
+    date_to = request.args.get('date_to')
+    try:
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 25))
+    except Exception:
+        page = 1
+        per_page = 25
+
+    query = Alert.query.order_by(Alert.created_at.desc())
+    if alert_type:
+        query = query.filter_by(type=alert_type)
+    if is_sent in ('0', '1'):
+        query = query.filter_by(is_sent=(is_sent == '1'))
+
+    # Date filters (simple ISO date support)
+    from datetime import datetime
+    try:
+        if date_from:
+            df = datetime.fromisoformat(date_from)
+            query = query.filter(Alert.created_at >= df)
+        if date_to:
+            dt = datetime.fromisoformat(date_to)
+            query = query.filter(Alert.created_at <= dt)
+    except Exception:
+        # If parsing fails, ignore date filters
+        pass
+
+    # Use SQLAlchemy/Flask-SQLAlchemy pagination
+    try:
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        alerts_page = pagination.items
+    except Exception:
+        # Fallback: limit offset
+        alerts_page = query.limit(per_page).offset((page - 1) * per_page).all()
+        pagination = None
+
+    processed = []
+    for a in alerts_page:
+        payload = a.payload
+        parsed = None
+        try:
+            if isinstance(payload, str):
+                parsed = json.loads(payload)
+            else:
+                parsed = payload
+        except Exception:
+            parsed = payload
+
+        user_link = None
+        try:
+            if isinstance(parsed, dict) and parsed.get('user_id'):
+                user_link = url_for('admin.user_detail', user_id=int(parsed.get('user_id')))
+        except Exception:
+            user_link = None
+
+        processed.append({'alert': a, 'payload': parsed, 'user_link': user_link})
+
+    return render_template('admin/alerts_list.html', alerts=processed, filter_type=alert_type, pagination=pagination, page=page, per_page=per_page, is_sent=is_sent, date_from=date_from, date_to=date_to)
+
+
+@bp.route('/alerts/<int:alert_id>/mark-sent', methods=['POST'])
+@admin_required
+def alert_mark_sent(alert_id: int):
+    a = Alert.query.get_or_404(alert_id)
+    try:
+        from datetime import datetime
+        a.is_sent = True
+        a.sent_at = datetime.utcnow()
+        db.session.commit()
+        flash('Alert als gesendet markiert.', 'success')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception('Failed to mark alert as sent')
+        flash('Fehler beim Markieren des Alerts.', 'danger')
+    return redirect(url_for('admin.alerts_list'))
+
+
+@bp.route('/alerts/<int:alert_id>/delete', methods=['POST'])
+@admin_required
+def alert_delete(alert_id: int):
+    a = Alert.query.get_or_404(alert_id)
+    try:
+        db.session.delete(a)
+        db.session.commit()
+        flash('Alert gelöscht.', 'info')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception('Failed to delete alert')
+        flash('Fehler beim Löschen des Alerts.', 'danger')
+    return redirect(url_for('admin.alerts_list'))
+
+
 # ---------- USERS ----------
 
 
@@ -497,7 +600,106 @@ def users_list():
 def user_detail(user_id: int):
     user = User.query.get_or_404(user_id)
     orders = Order.query.filter_by(user_id=user.id).order_by(Order.created_at.desc()).limit(10).all()
+    # Load recent B2B check results for this user (if any)
+    try:
+        b2b_checks = (
+            B2BCheckResult.query.filter_by(user_id=user.id)
+            .order_by(B2BCheckResult.created_at.desc())
+            .limit(20)
+            .all()
+        )
+    except Exception:
+        # In case of schema/database differences in local dev, keep page working
+        current_app.logger.exception('Failed to load B2B checks for user')
+        b2b_checks = []
     return render_template("admin/user_detail.html", user=user, orders=orders)
+
+
+@bp.route('/users/<int:user_id>/b2b-check', methods=['POST'])
+@admin_required
+def user_b2b_check(user_id: int):
+    """Admin action: trigger a manual B2B re-check for the given user (runs in background)."""
+    user = User.query.get_or_404(user_id)
+    try:
+        from ...services.b2b_checks.b2b_service import run_b2b_checks_for_user
+        import threading
+
+        def _run():
+            try:
+                run_b2b_checks_for_user(user)
+            except Exception:
+                current_app.logger.exception('Manual B2B check failed')
+
+        t = threading.Thread(target=_run, name=f'b2b-check-user-{user_id}', daemon=True)
+        t.start()
+        flash('B2B-Prüfung gestartet (im Hintergrund).', 'info')
+    except Exception:
+        current_app.logger.exception('Failed to start manual B2B check')
+        flash('Fehler beim Starten der B2B-Prüfung.', 'danger')
+
+    return redirect(url_for('admin.user_detail', user_id=user_id))
+
+
+@bp.route('/users/<int:user_id>/b2b-check.json', methods=['POST'])
+@admin_required
+def user_b2b_check_json(user_id: int):
+    """Start a background B2B check and return JSON (non-blocking).
+
+    Client can poll the fragment endpoint to pickup new checks.
+    """
+    user = User.query.get_or_404(user_id)
+    try:
+        from ...services.b2b_checks.b2b_service import run_b2b_checks_for_user
+        import threading
+
+        def _run():
+            try:
+                run_b2b_checks_for_user(user)
+            except Exception:
+                current_app.logger.exception('Manual B2B check failed (json)')
+
+        t = threading.Thread(target=_run, name=f'b2b-check-user-json-{user_id}', daemon=True)
+        t.start()
+        return jsonify({'started': True}), 202
+    except Exception:
+        current_app.logger.exception('Failed to start manual B2B check (json)')
+        return jsonify({'started': False}), 500
+
+
+@bp.route('/users/<int:user_id>/b2b-checks-fragment')
+@admin_required
+def user_b2b_checks_fragment(user_id: int):
+    """Return rendered HTML fragment for recent B2B checks for a user."""
+    try:
+        checks = (
+            B2BCheckResult.query.filter_by(user_id=user_id)
+            .order_by(B2BCheckResult.created_at.desc())
+            .limit(20)
+            .all()
+        )
+    except Exception:
+        current_app.logger.exception('Failed to load B2B checks fragment')
+        checks = []
+
+    return render_template('admin/_b2b_checks_fragment.html', b2b_checks=checks)
+
+
+@bp.route('/users/<int:user_id>/b2b-checks-status')
+@admin_required
+def user_b2b_checks_status(user_id: int):
+    """Return the ISO timestamp of the latest B2B check for the given user, or null."""
+    try:
+        latest = (
+            B2BCheckResult.query.filter_by(user_id=user_id)
+            .order_by(B2BCheckResult.created_at.desc())
+            .first()
+        )
+        if latest and latest.created_at:
+            return jsonify({'latest': latest.created_at.isoformat()})
+        return jsonify({'latest': None})
+    except Exception:
+        current_app.logger.exception('Failed to fetch B2B checks status')
+        return jsonify({'latest': None}), 500
 
 
 @bp.route("/users/<int:user_id>/change_role", methods=["POST"])
