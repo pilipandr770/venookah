@@ -10,6 +10,7 @@ from ...extensions import db
 from ...models.payment import Payment
 from ...models.order import Order, OrderStatus
 from ...services.prepare_shipment import prepare_shipment
+from ...models.warehouse import WarehouseTask, WarehouseTaskStatus
 
 bp = Blueprint("webhooks", __name__, url_prefix="/webhooks")
 
@@ -113,6 +114,16 @@ def handle_checkout_session_completed(session):
     order = payment.order
     order.status = OrderStatus.PAID
     db.session.commit()
+    # Ensure a WarehouseTask exists for this order (create if missing)
+    try:
+        existing = WarehouseTask.query.filter_by(order_id=order.id).first()
+        if not existing:
+            t = WarehouseTask(order_id=order.id, status=WarehouseTaskStatus.PENDING)
+            db.session.add(t)
+            db.session.commit()
+            current_app.logger.info("Created WarehouseTask id=%s for order %s (via webhook)", getattr(t, 'id', None), order.id)
+    except Exception as e:
+        current_app.logger.exception("Failed to ensure WarehouseTask for order %s: %s", order.id, e)
     # Prepare shipment
     try:
         prepare_shipment(order.id)
@@ -139,5 +150,19 @@ def handle_payment_intent_succeeded(payment_intent):
     order.status = OrderStatus.PAID
     db.session.commit()
 
+    # Ensure a WarehouseTask exists for this order (create if missing)
+    try:
+        existing = WarehouseTask.query.filter_by(order_id=order.id).first()
+        if not existing:
+            t = WarehouseTask(order_id=order.id, status=WarehouseTaskStatus.PENDING)
+            db.session.add(t)
+            db.session.commit()
+            current_app.logger.info("Created WarehouseTask id=%s for order %s (via webhook)", getattr(t, 'id', None), order.id)
+    except Exception as e:
+        current_app.logger.exception("Failed to ensure WarehouseTask for order %s: %s", order.id, e)
+
     # Prepare shipment
-    prepare_shipment(order.id)
+    try:
+        prepare_shipment(order.id)
+    except Exception as e:
+        current_app.logger.exception("prepare_shipment failed for order %s: %s", order.id, e)

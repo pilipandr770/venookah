@@ -12,6 +12,7 @@ from ...models.order import Order, OrderStatus
 from ...services.shipping.shipping_service import create_shipment_for_order
 from flask import current_app, jsonify
 from flask import url_for, flash
+from ...models.order import Order
 
 
 def warehouse_required(view_func):
@@ -39,7 +40,9 @@ def dashboard():
 @warehouse_required
 def tasks():
     tasks = WarehouseTask.query.order_by(WarehouseTask.created_at.desc()).all()
-    return render_template("warehouse/tasks.html", tasks=tasks)
+    # Also include recent orders (same as admin list) so warehouse can act on them
+    orders = Order.query.order_by(Order.created_at.desc()).limit(50).all()
+    return render_template("warehouse/tasks.html", tasks=tasks, orders=orders)
 
 
 @bp.route("/tasks/debug")
