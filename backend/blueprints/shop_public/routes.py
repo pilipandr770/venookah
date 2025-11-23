@@ -15,7 +15,7 @@ import stripe
 import os
 import requests
 from ...services.prepare_shipment import prepare_shipment
-from ...ai.whisper_client import transcribe_audio
+from ...ai.whisper_client import transcribe_audio, get_openai_key
 from ...models.warehouse import WarehouseProduct, WarehouseTask
 from ...models.shipping import Shipment
 from ...models.order import Order, OrderItem
@@ -109,7 +109,8 @@ def chat_api():
     else:
         system_prompt = ''
 
-    openai_key = current_app.config.get('OPENAI_API_KEY') or os.getenv('OPENAI_API_KEY')
+    # Resolve OpenAI key using the same logic as STT helper (env or .env)
+    openai_key = get_openai_key()
     model = current_app.config.get('OPENAI_MODEL') or os.getenv('OPENAI_MODEL') or 'gpt-4o-mini'
 
     if not openai_key:
@@ -180,11 +181,41 @@ def owner_query():
     if 'audio' in request.files:
         f = request.files['audio']
         try:
-            # transcribe_audio expects a file-like object
-            user_message = transcribe_audio(f)
+            # transcribe_audio returns either a string or dict {'text','language'}
+            tr = transcribe_audio(f)
         except Exception:
             current_app.logger.exception('Transcription failed')
             return jsonify({'error': 'transcription failed'}), 500
+
+        # Safely log transcription result; avoid letting logging formatting
+        # errors interrupt normal flow.
+        try:
+            current_app.logger.info(f"transcription result: {tr}")
+        except Exception:
+            current_app.logger.debug('transcription result logging failed', exc_info=True)
+
+        # Normalize transcription to user_message + detected_language
+        if isinstance(tr, dict):
+            user_message = tr.get('text', '')
+            detected_language = tr.get('language')
+        else:
+            user_message = tr or ''
+            detected_language = None
+        # log audio file size
+        try:
+            f.seek(0, os.SEEK_END)
+            size = f.tell()
+            f.seek(0)
+            current_app.logger.info(f"received audio file, size={size} bytes")
+        except Exception:
+            pass
+        # If transcription returned the mock placeholder or empty text, inform the user
+        if not user_message or not str(user_message).strip() or str(user_message).strip() == '[Mock transcription]':
+            current_app.logger.warning('Transcription returned empty or mock text')
+            return jsonify({
+                'error': 'transcription not available',
+                'detail': 'Speech-to-text is not configured or returned no text. Please send a text question or set OPENAI_API_KEY for transcription.'
+            }), 400
     else:
         # Accept message from form, querystring, JSON, or 'text' key
         user_message = None
@@ -195,9 +226,14 @@ def owner_query():
             if isinstance(json_body, dict):
                 user_message = json_body.get('message') or json_body.get('text')
 
-    current_app.logger.debug(
-        f"owner_query received: department={department} has_audio={'audio' in request.files} message_preview={(user_message or '')[:120]}"
-    )
+    # Avoid complex f-strings in logger; compose the message separately to
+    # prevent unexpected evaluation errors (slicing or format issues).
+    try:
+        preview = (user_message or '')[:120]
+    except Exception:
+        preview = '<unpreviewable>'
+    current_app.logger.debug("owner_query received: department=%s has_audio=%s message_preview=%s",
+                             department, 'audio' in request.files, preview)
 
     if not user_message:
         return jsonify({'error': 'empty message', 'detail': 'no message provided in form/text/json or audio provided'}), 400
@@ -215,20 +251,62 @@ def owner_query():
     # Build a small DB snapshot depending on department and also produce a CSV
     snapshot_lines = []
     csv_snap = None
+    # Per-department schema (hard-coded in code). These describe column meanings
+    # and are authoritative: they will be sent to the model as part of system context.
+    department_schemas = {
+        'warehouse': [
+            ('sku', 'Stock keeping unit identifier'),
+            ('name', 'Product name'),
+            ('quantity', 'Current on-hand quantity (integer)'),
+            ('location', 'Warehouse location code')
+        ],
+        'shop': [
+            ('category', 'Category or group name'),
+            ('product', 'Product name'),
+            ('price', 'Unit price (numeric, local currency)'),
+            ('sold', 'Quantity sold in the snapshot period'),
+            ('revenue', 'Revenue generated for that row (currency)')
+        ],
+        'sea': [
+            ('order_id', 'Internal order id'),
+            ('provider', 'Shipping provider name'),
+            ('tracking_number', 'Carrier tracking number'),
+            ('eta', 'Estimated arrival date (YYYY-MM-DD)')
+        ]
+    }
+
+    # Prepare a human-readable schema explanation for the selected department
+    schema_explanation = ''
+    try:
+        key = department.lower()
+        if key in department_schemas:
+            cols = department_schemas[key]
+            lines = [f"- `{c}`: {desc}" for c, desc in cols]
+            schema_explanation = 'This snapshot has the following columns:\n' + '\n'.join(lines)
+        else:
+            schema_explanation = 'No fixed schema is defined for this department.'
+    except Exception:
+        schema_explanation = ''
     try:
         if department.lower() in ('warehouse', 'склад', 'склад'):
-            low = WarehouseProduct.query.filter(WarehouseProduct.quantity <= 10).order_by(WarehouseProduct.quantity.asc()).limit(50).all()
+            # Provide a broader inventory snapshot for warehouse: include up to 200 products,
+            # ordered by quantity descending so the model sees both high-stock and low-stock items.
+            products = WarehouseProduct.query.order_by(WarehouseProduct.quantity.desc()).limit(200).all()
             pending = WarehouseTask.query.filter(WarehouseTask.status == 'pending').count()
-            snapshot_lines.append(f'Low stock items (<=10): {len(low)}')
-            for p in low:
-                snapshot_lines.append(f'- {p.sku} {p.name}: qty={p.quantity}, location={p.location}')
+            total_items = len(products)
+            total_quantity = sum([int(p.quantity or 0) for p in products])
+            low = [p for p in products if (p.quantity or 0) <= 10]
+            snapshot_lines.append(f'Inventory snapshot: items_returned={total_items} total_quantity={total_quantity}')
+            snapshot_lines.append(f'Low stock items (<=10) in snapshot: {len(low)}')
             snapshot_lines.append(f'Pending warehouse tasks: {pending}')
+            for p in (low[:20]):
+                snapshot_lines.append(f'- {p.sku} {p.name}: qty={p.quantity}, location={p.location}')
 
-            # CSV snapshot (sku,name,quantity,location)
+            # CSV snapshot (sku,name,quantity,location) include the full returned set (capped)
             out = io.StringIO()
             writer = csv.writer(out)
             writer.writerow(['sku', 'name', 'quantity', 'location'])
-            for p in low:
+            for p in products:
                 writer.writerow([p.sku, p.name, p.quantity, p.location])
             csv_snap = out.getvalue()
 
@@ -295,6 +373,22 @@ def owner_query():
         if instructions:
             messages.append({'role': 'system', 'content': instructions})
 
+    # Add authoritative schema as internal context. The assistant MUST NOT explain the schema
+    # to the owner; it should use the schema internally to interpret the CSV and answer
+    # concisely and directly.
+    if schema_explanation:
+        schema_internal = textwrap.dedent(f"""
+            [INTERNAL] Department data schema (do NOT explain to owner):
+            {schema_explanation}
+
+            Behavior rules (apply strictly):
+            - Use the schema internally to interpret the CSV snapshot and rows; do NOT explain the schema to the owner.
+            - Answer concisely and directly based only on the provided data. Do not invent numbers.
+            - If the data is incomplete or truncated, state that briefly and include a confidence note.
+            - Always answer in the same language as the question.
+        """)
+        messages.append({'role': 'system', 'content': schema_internal})
+
     # include CSV snapshot as a system message with explanation (cap length)
     if csv_snap:
         max_len = 16000
@@ -311,6 +405,12 @@ def owner_query():
     elif snapshot_lines:
         messages.append({'role': 'system', 'content': 'Database snapshot for department ' + department + ':\n' + '\n'.join(snapshot_lines)})
 
+    # If a language was detected from audio, instruct model to reply in that language
+    if 'detected_language' in locals() and detected_language:
+        # Provide a short system hint to prefer the detected language
+        if detected_language and detected_language != 'unknown':
+            messages.append({'role': 'system', 'content': f'Prefer replying in language: {detected_language}.'})
+
     messages.append({'role': 'user', 'content': user_message})
 
     openai_key = current_app.config.get('OPENAI_API_KEY') or os.getenv('OPENAI_API_KEY')
@@ -321,6 +421,21 @@ def owner_query():
 
     url = 'https://api.openai.com/v1/chat/completions'
     headers = {'Authorization': f'Bearer {openai_key}', 'Content-Type': 'application/json'}
+
+    # Sanity check: ensure headers are encodable to latin-1 (http.client requirement).
+    # If a header contains non-Latin-1 characters (e.g. Cyrillic pasted into the API key),
+    # http.client will raise a UnicodeEncodeError. Detect this early and return a clear message.
+    try:
+        for hn, hv in headers.items():
+            if not isinstance(hv, str):
+                hv = str(hv)
+            hv.encode('latin-1')
+    except UnicodeEncodeError:
+        current_app.logger.error('OpenAI header contains non-Latin-1 characters', exc_info=True)
+        return jsonify({
+            'error': 'invalid_openai_header',
+            'detail': 'One of the HTTP headers (likely Authorization) contains non-Latin-1 characters. Please check your OPENAI_API_KEY for accidental non-ASCII characters or quotes.'
+        }), 500
     payload = {'model': model, 'messages': messages, 'temperature': 0.2, 'max_tokens': 800}
     try:
         resp = requests.post(url, headers=headers, json=payload, timeout=30)

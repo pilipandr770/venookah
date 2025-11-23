@@ -40,7 +40,7 @@ async def cmd_ping(message: types.Message):
     await message.answer("pong 🟢")
 
 
-@dp.message()
+@dp.message(lambda message: getattr(message, 'text', None) is not None)
 async def handle_text(message: types.Message):
     """Handle plain text messages as owner queries if they come from owner id or any user.
 
@@ -97,12 +97,10 @@ async def handle_text(message: types.Message):
         await message.answer(f"Unexpected error: {e}")
 
 
-@dp.message()
+@dp.message(lambda message: getattr(message, 'voice', None) is not None or getattr(message, 'audio', None) is not None)
 async def handle_voice(message: types.Message):
-    # This handler is a generic message handler that processes voice messages.
-    # aiogram 3.x does not accept the `content_types` kwarg on the decorator
-    # registrar in the same way as 2.x; detect voice messages here instead.
-    if not message.voice:
+    # This handler processes voice (voice notes) and audio files.
+    if not (message.voice or message.audio):
         return
 
     # download voice file from Telegram, send to backend as 'audio'
