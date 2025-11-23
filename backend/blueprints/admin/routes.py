@@ -204,6 +204,88 @@ def debug_info():
     })
 
 
+@bp.route('/debug/products_files')
+@admin_required
+def debug_products_files():
+    """Return products and check if their main_image_url files exist on disk."""
+    products = Product.query.order_by(Product.id.desc()).all()
+    rows = []
+    for p in products:
+        url = p.main_image_url or ''
+        file_exists = False
+        try:
+            if url.startswith('/static/'):
+                rel = url[len('/static/'):]
+                fs_path = os.path.join(current_app.root_path, 'static', rel.replace('/', os.sep))
+                file_exists = os.path.exists(fs_path)
+            else:
+                # external URL
+                file_exists = False
+        except Exception:
+            file_exists = False
+
+        rows.append({'id': p.id, 'main_image_url': url, 'file_exists': file_exists})
+
+    return jsonify({'products': rows})
+
+
+@bp.route('/debug/products_files/fix', methods=['POST'])
+@admin_required
+def debug_products_files_fix():
+    """Attempt to fix missing product main images by searching `static/uploads` for similar filenames."""
+    uploads_dir = os.path.join(current_app.root_path, 'static', 'uploads')
+    try:
+        files = os.listdir(uploads_dir)
+    except Exception:
+        files = []
+
+    def normalize(s: str):
+        import re
+
+        return re.sub(r'[^a-z0-9]+', '', s.lower() or '')
+
+    fixes = []
+    for p in Product.query.order_by(Product.id.asc()).all():
+        url = p.main_image_url or ''
+        if url and url.startswith('/static/'):
+            rel = url[len('/static/'):]
+            fs_path = os.path.join(current_app.root_path, 'static', rel.replace('/', os.sep))
+            if os.path.exists(fs_path):
+                continue
+
+        # Try to find candidate
+        slug = getattr(p, 'slug', '') or ''
+        name = getattr(p, 'name', '') or ''
+        candidates = []
+        nslug = normalize(slug)
+        nname = normalize(name)
+        for f in files:
+            nf = normalize(f)
+            if nslug and nslug in nf:
+                candidates.append(f)
+            elif nname and nname in nf:
+                candidates.append(f)
+
+        chosen = None
+        if candidates:
+            chosen = candidates[0]
+        else:
+            # fallback: if only one file in uploads, use it
+            if len(files) == 1:
+                chosen = files[0]
+
+        if chosen:
+            new_url = f"/static/uploads/{chosen}"
+            p.main_image_url = new_url
+            fixes.append({'product_id': p.id, 'old_url': url, 'new_url': new_url})
+            db.session.add(p)
+
+    if fixes:
+        db.session.commit()
+
+    return jsonify({'fixed': fixes, 'uploads_count': len(files)})
+
+
 @bp.route("/products/create", methods=["GET", "POST"])
 @admin_required
 def product_create():

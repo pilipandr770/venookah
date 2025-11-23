@@ -108,3 +108,16 @@ a:focus,button:focus,input:focus{outline:2px solid rgba(125,211,252,0.12);outlin
 
 /* End of stylesheet */
 
+/*
+	Temporary global override: make all fonts bright green for maximum contrast
+	(Applied because user requested bright-green typography for dark theme).
+	This force-applies color to all textual elements — if you later want to scope
+	it, remove the global selectors and apply to specific components instead.
+*/
+html, body, body * {
+		color: #00ff00 !important;
+}
+
+::placeholder { color: #00ff00 !important; opacity: 1 !important; }
+
+
