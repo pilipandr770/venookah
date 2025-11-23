@@ -15,6 +15,15 @@ import stripe
 import os
 import requests
 from ...services.prepare_shipment import prepare_shipment
+from ...ai.whisper_client import transcribe_audio
+from ...models.warehouse import WarehouseProduct, WarehouseTask
+from ...models.shipping import Shipment
+from ...models.order import Order, OrderItem
+from ...models.product import Product
+from io import BytesIO
+import io
+import csv
+import textwrap
 
 
 def get_or_create_cart(user_id: int) -> Cart:
@@ -140,6 +149,192 @@ def chat_api():
     except requests.RequestException as e:
         current_app.logger.exception('OpenAI request failed')
         return jsonify({'error': 'OpenAI request failed', 'detail': str(e)}), 500
+
+
+@bp.route('/api/ai/owner_query', methods=['POST'])
+def owner_query():
+    """Endpoint for owner queries from Telegram bot.
+
+    Accepts multipart/form-data with either 'audio' file or 'message' text and a 'department' field.
+    Returns JSON {'reply': '...'}.
+    """
+    # Accept department from form, querystring, or default to 'shop'
+    department = (request.form.get('department') or request.args.get('department') or request.values.get('department'))
+    if not department:
+        department = 'shop'
+
+    # Debug logging to diagnose 400s: log what fields were received
+    try:
+        body_preview = (request.get_data(as_text=True) or '')[:1000]
+    except Exception:
+        body_preview = '<unreadable body>'
+    # Use formatted log line so it appears in simple logs
+    current_app.logger.info(
+        f"owner_query incoming request: department={department} form={dict(request.form)} files={list(request.files.keys())} args={dict(request.args)} body_preview={body_preview}"
+    )
+    if not department:
+        return jsonify({'error': 'department required'}), 400
+
+    # Determine user message: audio file or text
+    user_message = None
+    if 'audio' in request.files:
+        f = request.files['audio']
+        try:
+            # transcribe_audio expects a file-like object
+            user_message = transcribe_audio(f)
+        except Exception:
+            current_app.logger.exception('Transcription failed')
+            return jsonify({'error': 'transcription failed'}), 500
+    else:
+        # Accept message from form, querystring, JSON, or 'text' key
+        user_message = None
+        if request.values:
+            user_message = request.values.get('message') or request.values.get('text')
+        if not user_message:
+            json_body = request.get_json(silent=True) or {}
+            if isinstance(json_body, dict):
+                user_message = json_body.get('message') or json_body.get('text')
+
+    current_app.logger.debug(
+        f"owner_query received: department={department} has_audio={'audio' in request.files} message_preview={(user_message or '')[:120]}"
+    )
+
+    if not user_message:
+        return jsonify({'error': 'empty message', 'detail': 'no message provided in form/text/json or audio provided'}), 400
+
+    # Load system prompt
+    prompt_path = os.path.join(current_app.root_path, 'data', 'ai_system_prompt.txt')
+    system_prompt = ''
+    if os.path.exists(prompt_path):
+        try:
+            with open(prompt_path, 'r', encoding='utf-8') as fh:
+                system_prompt = fh.read() or ''
+        except Exception:
+            system_prompt = ''
+
+    # Build a small DB snapshot depending on department and also produce a CSV
+    snapshot_lines = []
+    csv_snap = None
+    try:
+        if department.lower() in ('warehouse', 'склад', 'склад'):
+            low = WarehouseProduct.query.filter(WarehouseProduct.quantity <= 10).order_by(WarehouseProduct.quantity.asc()).limit(50).all()
+            pending = WarehouseTask.query.filter(WarehouseTask.status == 'pending').count()
+            snapshot_lines.append(f'Low stock items (<=10): {len(low)}')
+            for p in low:
+                snapshot_lines.append(f'- {p.sku} {p.name}: qty={p.quantity}, location={p.location}')
+            snapshot_lines.append(f'Pending warehouse tasks: {pending}')
+
+            # CSV snapshot (sku,name,quantity,location)
+            out = io.StringIO()
+            writer = csv.writer(out)
+            writer.writerow(['sku', 'name', 'quantity', 'location'])
+            for p in low:
+                writer.writerow([p.sku, p.name, p.quantity, p.location])
+            csv_snap = out.getvalue()
+
+        elif department.lower() in ('shop', 'магазин'):
+            recent_orders = Order.query.order_by(Order.created_at.desc()).limit(50).all()
+            total_recent = sum([float(o.total_amount or 0) for o in recent_orders])
+            snapshot_lines.append(f'Recent orders (last {len(recent_orders)}): total_amount_sum={total_recent}')
+            # top products by quantity in recent orders
+            items = (
+                OrderItem.query.join(Product, OrderItem.product_id == Product.id)
+                .order_by(OrderItem.quantity.desc()).limit(50).all()
+            )
+            for it in items:
+                snapshot_lines.append(f'- {it.product.name} x{it.quantity}')
+
+            # CSV snapshot (product_name,quantity)
+            out = io.StringIO()
+            writer = csv.writer(out)
+            writer.writerow(['product_name', 'quantity'])
+            for it in items:
+                writer.writerow([it.product.name, it.quantity])
+            csv_snap = out.getvalue()
+
+        elif department.lower() in ('sea', 'морские', 'морские доставки', 'доставка морских грузов'):
+            upcoming = Shipment.query.filter(Shipment.eta != None).order_by(Shipment.eta.asc()).limit(50).all()
+            snapshot_lines.append(f'Upcoming shipments: {len(upcoming)}')
+            for s in upcoming:
+                eta = s.eta.strftime('%Y-%m-%d') if s.eta else 'n/a'
+                snapshot_lines.append(f'- Order {s.order_id} provider={s.provider} tracking={s.tracking_number} ETA={eta}')
+
+            # CSV snapshot (order_id,provider,tracking_number,eta)
+            out = io.StringIO()
+            writer = csv.writer(out)
+            writer.writerow(['order_id', 'provider', 'tracking_number', 'eta'])
+            for s in upcoming:
+                eta = s.eta.strftime('%Y-%m-%d') if s.eta else ''
+                writer.writerow([s.order_id, s.provider, s.tracking_number, eta])
+            csv_snap = out.getvalue()
+        else:
+            snapshot_lines.append('No department-specific snapshot available.')
+    except Exception:
+        current_app.logger.exception('Error building snapshot')
+        snapshot_lines.append('Error building snapshot (internal)')
+
+    # Compose messages for OpenAI
+    messages = []
+    # Load department-specific instruction file if present
+    instructions = ''
+    try:
+        instr_path = os.path.join(current_app.root_path, 'data', f'ai_instructions_{department.lower()}.txt')
+        if os.path.exists(instr_path):
+            with open(instr_path, 'r', encoding='utf-8') as ih:
+                instructions = ih.read() or ''
+    except Exception:
+        instructions = ''
+
+    # Combine generic system prompt and department instructions
+    if system_prompt:
+        combined = system_prompt
+        if instructions:
+            combined = instructions + "\n\n" + combined
+        messages.append({'role': 'system', 'content': combined})
+    else:
+        if instructions:
+            messages.append({'role': 'system', 'content': instructions})
+
+    # include CSV snapshot as a system message with explanation (cap length)
+    if csv_snap:
+        max_len = 16000
+        csv_text = csv_snap[:max_len]
+        if len(csv_snap) > max_len:
+            csv_text += '\n[TRUNCATED]'
+        csv_message = textwrap.dedent(f"""
+            Database snapshot (CSV) for department {department}.
+            The CSV has a header row with column names. Use this data to answer the owner's question.
+
+            {csv_text}
+        """)
+        messages.append({'role': 'system', 'content': csv_message})
+    elif snapshot_lines:
+        messages.append({'role': 'system', 'content': 'Database snapshot for department ' + department + ':\n' + '\n'.join(snapshot_lines)})
+
+    messages.append({'role': 'user', 'content': user_message})
+
+    openai_key = current_app.config.get('OPENAI_API_KEY') or os.getenv('OPENAI_API_KEY')
+    model = current_app.config.get('OPENAI_MODEL') or os.getenv('OPENAI_MODEL') or 'gpt-4o-mini'
+    if not openai_key:
+        # mock behavior
+        return jsonify({'reply': f'[Mock AI reply for {department}] {user_message}'}), 200
+
+    url = 'https://api.openai.com/v1/chat/completions'
+    headers = {'Authorization': f'Bearer {openai_key}', 'Content-Type': 'application/json'}
+    payload = {'model': model, 'messages': messages, 'temperature': 0.2, 'max_tokens': 800}
+    try:
+        resp = requests.post(url, headers=headers, json=payload, timeout=30)
+        resp.raise_for_status()
+        j = resp.json()
+        reply = ''
+        if 'choices' in j and len(j['choices']) > 0:
+            reply = j['choices'][0].get('message', {}).get('content', '')
+        else:
+            reply = j.get('error', {}).get('message', 'No reply')
+        return jsonify({'reply': reply})
+    except requests.RequestException:
+        current_app.logger.exception('OpenAI request failed')
+        return jsonify({'error': 'OpenAI request failed'}), 500
 
 
 @bp.route('/delivery')
