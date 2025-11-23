@@ -29,6 +29,42 @@ def create_app() -> Flask:
     init_extensions(app)
     register_blueprints(app)
 
+    # Optionally ensure basic shop categories exist (useful for local/dev instances)
+    # Controlled via env var `ENSURE_DEFAULT_CATEGORIES` (default: '1' for dev convenience).
+    def _ensure_default_categories():
+        try:
+                from .models.product import Category
+                from .extensions import db as _db
+                from sqlalchemy import inspect
+
+                with app.app_context():
+                    enabled = os.getenv('ENSURE_DEFAULT_CATEGORIES', '1').lower()
+                    if enabled not in ('1', 'true', 'yes'):
+                        return
+
+                    inspector = inspect(_db.engine)
+                    # If the categories table doesn't exist yet (migrations not applied), skip.
+                    if not inspector.has_table(Category.__tablename__):
+                        app.logger.info("Skipping default category creation: table does not exist yet")
+                        return
+
+                    # Create 'coal' and 'tobacco' categories if missing
+                    if not Category.query.filter_by(slug='coal').first():
+                        app.logger.info("Creating default category: coal / Kohle")
+                        c = Category(name='Kohle', slug='coal')
+                        _db.session.add(c)
+                        _db.session.commit()
+
+                    if not Category.query.filter_by(slug='tobacco').first():
+                        app.logger.info("Creating default category: tobacco / Tabak")
+                        c = Category(name='Tabak (Shisha)', slug='tobacco')
+                        _db.session.add(c)
+                        _db.session.commit()
+        except Exception:
+            app.logger.exception("Failed to ensure default categories")
+
+    _ensure_default_categories()
+
     # Start the Telegram bot as a background subprocess when the app starts.
     # Controlled via `START_TELEGRAM_BOT` env var (default: '1').
     # We guard against the Flask reloader starting the bot twice by checking

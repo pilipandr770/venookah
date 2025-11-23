@@ -7,8 +7,8 @@ from .stripe_client import mark_payment_succeeded
 
 def handle_stripe_event(event: dict[str, Any]) -> None:
     """
-    Обробка Stripe webhook event.
-    MVP: тільки payment_intent.succeeded через checkout.session.completed.
+    Verarbeitung von Stripe-Webhook-Ereignissen.
+    MVP: nur payment_intent.succeeded über checkout.session.completed.
     """
     event_type = event.get("type")
     data_object = event.get("data", {}).get("object", {})

@@ -50,6 +50,14 @@ def init_extensions(app):
     login_manager.login_view = "auth.login"
     login_manager.login_message_category = "warning"
     babel.init_app(app)
+    # Register locale selector in a way that works across Flask-Babel versions.
+    try:
+        # Older Flask-Babel versions provide the decorator `localeselector`.
+        # If available, use it to register the module-level `get_locale`.
+        babel.localeselector(get_locale)  # type: ignore[attr-defined]
+    except AttributeError:
+        # Newer Flask-Babel versions use `locale_selector_func` assignment.
+        setattr(babel, "locale_selector_func", get_locale)
 
     # Damit Flask-Login weiß, wie ein Benutzer geladen wird
     from .models.user import User  # noqa: WPS433,F401
@@ -59,7 +67,6 @@ def init_extensions(app):
         return User.query.get(int(user_id))
 
 
-@babel.localeselector
 def get_locale():
     """Wählt Locale basierend auf `?lang=` oder Accept-Language, Fallback auf config."""
     supported = current_app.config.get("SUPPORTED_LANGUAGES", ["de", "en"])

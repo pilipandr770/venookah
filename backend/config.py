@@ -7,14 +7,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 def _build_sqlalchemy_uri() -> str:
-        """
-        Erstelle die SQLALCHEMY_DATABASE_URI.
+    """Erstelle die SQLALCHEMY_DATABASE_URI.
 
-        - Wenn `DATABASE_URL` gesetzt ist (z. B. von Render), verwenden wir sie.
-        - Wenn die URL mit `postgres://` beginnt, ersetzen wir sie durch
-            `postgresql+psycopg2://` (häufiges Render/Heroku-Problem).
-        - Andernfalls verwenden wir lokal SQLite als Fallback (für schnellen Dev-Use).
-        """
+    - Wenn `DATABASE_URL` gesetzt ist (z. B. von Render), verwenden wir sie.
+    - Wenn die URL mit `postgres://` beginnt, ersetzen wir sie durch
+      `postgresql+psycopg2://` (häufiges Render/Heroku-Problem).
+    - Andernfalls verwenden wir lokal SQLite als Fallback (für schnellen Dev-Use).
+    """
     raw = os.getenv("DATABASE_URL")
     if raw:
         # Fix für das Format postgres://

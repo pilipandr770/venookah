@@ -17,7 +17,7 @@ from werkzeug.utils import secure_filename
 from ...extensions import db
 from ...models.user import User, UserRole
 from ...models.product import Category, Product
-from ...models.order import Order
+from ...models.order import Order, OrderItem, CartItem
 from ...models.payment import Payment
 from ...models.warehouse import WarehouseTask
 from ...models.crm import Company
@@ -391,9 +391,43 @@ def product_edit(product_id: int):
 @admin_required
 def product_delete(product_id: int):
     product = Product.query.get_or_404(product_id)
-    db.session.delete(product)
-    db.session.commit()
-    flash("Produkt gelöscht.", "info")
+    # Prevent deletion if product is referenced by order items or cart items
+    try:
+        order_refs = OrderItem.query.filter_by(product_id=product.id).count()
+    except Exception:
+        order_refs = 0
+
+    try:
+        cart_refs = CartItem.query.filter_by(product_id=product.id).count()
+    except Exception:
+        cart_refs = 0
+
+    if order_refs:
+        flash(
+            f"Produkt kann nicht gelöscht werden: es wird in {order_refs} Bestellposition(en) verwendet. Entfernen Sie zuerst die zugehörigen Bestellungen/Positionen.",
+            "danger",
+        )
+        return redirect(url_for("admin.products_list"))
+
+    if cart_refs:
+        flash(
+            f"Produkt kann nicht gelöscht werden: es ist in {cart_refs} Warenkorb/Posten vorhanden. Entfernen Sie es zuerst aus den Warenkörben.",
+            "warning",
+        )
+        return redirect(url_for("admin.products_list"))
+
+    try:
+        db.session.delete(product)
+        db.session.commit()
+        flash("Produkt gelöscht.", "info")
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Error deleting product")
+        flash(
+            "Fehler beim Löschen des Produkts. Möglicherweise referenzieren Bestellungen dieses Produkt.",
+            "danger",
+        )
+
     return redirect(url_for("admin.products_list"))
 
 
@@ -479,4 +513,35 @@ def change_user_role(user_id: int):
         flash(f"Rolle des Benutzers {user.email} wurde auf {new_role} geändert.", "success")
     else:
         flash("Ungültige Rolle.", "danger")
-    return redirect(url_for('admin.users'))
+    return redirect(url_for('admin.users_list'))
+
+
+@bp.route('/ensure-default-categories', methods=['POST'])
+@admin_required
+def ensure_default_categories():
+    """Admin action: create default shop categories if they are missing.
+
+    This is deliberately an explicit admin POST action to avoid running
+    category-creation logic at import/startup time (which may fail before
+    migrations are applied).
+    """
+    from ...models.product import Category
+
+    created = []
+    if not Category.query.filter_by(slug='coal').first():
+        c = Category(name='Kohle', slug='coal')
+        db.session.add(c)
+        created.append('Kohle')
+
+    if not Category.query.filter_by(slug='tobacco').first():
+        c = Category(name='Tabak (Shisha)', slug='tobacco')
+        db.session.add(c)
+        created.append('Tabak')
+
+    if created:
+        db.session.commit()
+        flash(f"Standardkategorien erstellt: {', '.join(created)}", 'success')
+    else:
+        flash('Standardkategorien bereits vorhanden.', 'info')
+
+    return redirect(url_for('admin.categories_list'))

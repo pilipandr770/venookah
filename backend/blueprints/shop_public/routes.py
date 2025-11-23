@@ -50,15 +50,14 @@ def index():
     coal_products = []
     for p in products:
         if p.category and (
-            'табак' in p.category.name.lower()
+            'tabak' in p.category.name.lower()
             or 'tobacco' in p.category.name.lower()
             or 'tabak' in p.category.name.lower()
         ):
             tobacco_products.append(p)
         elif p.category and (
-            'вугілля' in p.category.name.lower()
+            'kohle' in p.category.name.lower()
             or 'coal' in p.category.name.lower()
-            or 'уголь' in p.category.name.lower()
             or 'kohle' in p.category.name.lower()
         ):
             coal_products.append(p)
@@ -297,7 +296,7 @@ def owner_query():
     except Exception:
         schema_explanation = ''
     try:
-        if department.lower() in ('warehouse', 'склад', 'склад'):
+        if department.lower() in ('warehouse', 'lager', 'lager'):
             # Provide a broader inventory snapshot for warehouse: include up to 200 products,
             # ordered by quantity descending so the model sees both high-stock and low-stock items.
             products = WarehouseProduct.query.order_by(WarehouseProduct.quantity.desc()).limit(200).all()
@@ -319,7 +318,7 @@ def owner_query():
                 writer.writerow([p.sku, p.name, p.quantity, p.location])
             csv_snap = out.getvalue()
 
-        elif department.lower() in ('shop', 'магазин'):
+        elif department.lower() in ('shop', 'laden', 'магазин'):
             recent_orders = Order.query.order_by(Order.created_at.desc()).limit(50).all()
             total_recent = sum([float(o.total_amount or 0) for o in recent_orders])
             snapshot_lines.append(f'Recent orders (last {len(recent_orders)}): total_amount_sum={total_recent}')
@@ -339,7 +338,7 @@ def owner_query():
                 writer.writerow([it.product.name, it.quantity])
             csv_snap = out.getvalue()
 
-        elif department.lower() in ('sea', 'морские', 'морские доставки', 'доставка морских грузов'):
+        elif department.lower() in ('sea', 'see', 'seefracht', 'seetransport'):
             upcoming = Shipment.query.filter(Shipment.eta != None).order_by(Shipment.eta.asc()).limit(50).all()
             snapshot_lines.append(f'Upcoming shipments: {len(upcoming)}')
             for s in upcoming:
@@ -481,7 +480,7 @@ def add_to_cart(product_id: int):
         cart_item = CartItem(cart_id=cart.id, product_id=product.id, quantity=1)
         db.session.add(cart_item)
     db.session.commit()
-    flash(f"Товар '{product.name}' додано до корзини.", "success")
+    flash(f"Das Produkt '{product.name}' wurde zum Warenkorb hinzugefügt.", "success")
     return redirect(request.referrer or url_for('shop_public.index'))
 
 
@@ -505,11 +504,11 @@ def update_cart_item(item_id: int):
     if quantity > 0:
         cart_item.quantity = quantity
         db.session.commit()
-        flash("Кількість оновлено.", "success")
+        flash("Menge aktualisiert.", "success")
     else:
         db.session.delete(cart_item)
         db.session.commit()
-        flash("Товар видалено з корзини.", "info")
+        flash("Produkt aus dem Warenkorb entfernt.", "info")
     return redirect(url_for('shop_public.view_cart'))
 
 

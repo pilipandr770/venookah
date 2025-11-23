@@ -1,7 +1,7 @@
 # file: backend/services/__init__.py
 
 """
-Сервіси бізнес-логіки для Venookah2.
+Geschäftslogik-Services für Venookah2.
 
-Тут розміщуються функції, які можна викликати з blueprints, воркерів, бота тощо.
+Hier befinden sich Funktionen, die von Blueprints, Workern, dem Bot usw. aufgerufen werden können.
 """
