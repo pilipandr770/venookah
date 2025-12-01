@@ -1,9 +1,10 @@
 # file: backend/ai/assistant_client.py
 
 """
-Заглушка клієнта до OpenAI Assistants API.
+Simple OpenAI client wrapper for shop assistant.
 
-Пізніше сюди можна підключити офіційний SDK.
+Note: Boss assistant queries are handled via /api/ai/owner_query endpoint
+which uses Chat Completions API directly with database snapshots.
 """
 
 import os
@@ -17,12 +18,14 @@ class AssistantClient:
         self.assistant_boss = os.getenv("OPENAI_ASSISTANT_ID_BOSS", "")
 
     def ask_shop_assistant(self, message: str, context: dict | None = None) -> str:
-        # TODO: інтеграція з OpenAI
+        # Shop assistant for product queries
+        # For now returns mock, can be extended to use Chat Completions API
         return f"[AI-продавець mock] {message}"
 
     def ask_boss_assistant(self, message: str, context: dict | None = None) -> str:
-        # TODO: інтеграція з OpenAI
-        return f"[AI-доповідь шефу mock] {message}"
+        # Boss assistant is handled via /api/ai/owner_query endpoint in shop_public routes
+        # This method is kept for compatibility but should not be used directly
+        return f"[Use /api/ai/owner_query endpoint instead] {message}"
 
 
 assistant_client = AssistantClient()

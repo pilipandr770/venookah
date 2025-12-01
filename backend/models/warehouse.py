@@ -16,16 +16,16 @@ class WarehouseTaskStatus:
 class WarehouseTask(db.Model):
     __tablename__ = "warehouse_tasks"
 
-    __table_args__ = {'schema': 'venookah2'}
+    
 
     id = db.Column(db.Integer, primary_key=True)
 
-    order_id = db.Column(db.Integer, db.ForeignKey("venookah2.orders.id"), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey("orders.id"), nullable=False)
     order = db.relationship("Order", backref="warehouse_tasks")
 
     status = db.Column(db.String(32), nullable=False, default=WarehouseTaskStatus.PENDING)
 
-    assigned_to = db.Column(db.Integer, db.ForeignKey("venookah2.users.id"), nullable=True)
+    assigned_to = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     assigned_user = db.relationship("User", backref="warehouse_tasks")
 
     notes = db.Column(db.Text, nullable=True)
@@ -39,7 +39,7 @@ class WarehouseTask(db.Model):
 class WarehouseCategory(db.Model):
     __tablename__ = "warehouse_categories"
 
-    __table_args__ = {'schema': 'venookah2'}
+    
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
@@ -56,14 +56,14 @@ class WarehouseCategory(db.Model):
 class WarehouseProduct(db.Model):
     __tablename__ = "warehouse_products"
 
-    __table_args__ = {'schema': 'venookah2'}
+    
 
     id = db.Column(db.Integer, primary_key=True)
     sku = db.Column(db.String(255), nullable=False, unique=True)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
 
-    category_id = db.Column(db.Integer, db.ForeignKey("venookah2.warehouse_categories.id"), nullable=True)
+    category_id = db.Column(db.Integer, db.ForeignKey("warehouse_categories.id"), nullable=True)
     category = db.relationship("WarehouseCategory", back_populates="products")
 
     quantity = db.Column(db.Integer, nullable=False, default=0)

@@ -19,11 +19,12 @@ class OrderStatus:
 
 class Order(db.Model):
     __tablename__ = "orders"
-    __table_args__ = {'schema': 'venookah2'}
+
+    
 
     id = db.Column(db.Integer, primary_key=True)
 
-    user_id = db.Column(db.Integer, db.ForeignKey("venookah2.users.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     user = db.relationship("User", backref="orders")
 
     status = db.Column(db.String(32), nullable=False, default=OrderStatus.NEW)
@@ -46,14 +47,15 @@ class Order(db.Model):
 
 class OrderItem(db.Model):
     __tablename__ = "order_items"
-    __table_args__ = {'schema': 'venookah2'}
+
+    
 
     id = db.Column(db.Integer, primary_key=True)
 
-    order_id = db.Column(db.Integer, db.ForeignKey("venookah2.orders.id"), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey("orders.id"), nullable=False)
     order = db.relationship("Order", backref="items")
 
-    product_id = db.Column(db.Integer, db.ForeignKey("venookah2.products.id"), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
     product = db.relationship("Product")
 
     quantity = db.Column(db.Integer, nullable=False, default=1)
@@ -63,11 +65,12 @@ class OrderItem(db.Model):
 
 class Cart(db.Model):
     __tablename__ = "carts"
-    __table_args__ = {'schema': 'venookah2'}
+
+    
 
     id = db.Column(db.Integer, primary_key=True)
 
-    user_id = db.Column(db.Integer, db.ForeignKey("venookah2.users.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     user = db.relationship("User", backref="cart")
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -78,14 +81,15 @@ class Cart(db.Model):
 
 class CartItem(db.Model):
     __tablename__ = "cart_items"
-    __table_args__ = {'schema': 'venookah2'}
+
+    
 
     id = db.Column(db.Integer, primary_key=True)
 
-    cart_id = db.Column(db.Integer, db.ForeignKey("venookah2.carts.id"), nullable=False)
+    cart_id = db.Column(db.Integer, db.ForeignKey("carts.id"), nullable=False)
     cart = db.relationship("Cart", backref="items")
 
-    product_id = db.Column(db.Integer, db.ForeignKey("venookah2.products.id"), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
     product = db.relationship("Product")
 
     quantity = db.Column(db.Integer, nullable=False, default=1)

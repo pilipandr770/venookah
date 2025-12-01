@@ -8,7 +8,7 @@ from ..extensions import db
 class Alert(db.Model):
     __tablename__ = "alerts"
 
-    __table_args__ = {'schema': 'venookah2'}
+    
 
     id = db.Column(db.Integer, primary_key=True)
 

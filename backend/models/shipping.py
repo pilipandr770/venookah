@@ -8,11 +8,11 @@ from ..extensions import db
 class Shipment(db.Model):
     __tablename__ = "shipments"
 
-    __table_args__ = {'schema': 'venookah2'}
+    
 
     id = db.Column(db.Integer, primary_key=True)
 
-    order_id = db.Column(db.Integer, db.ForeignKey("venookah2.orders.id"), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey("orders.id"), nullable=False)
     order = db.relationship("Order", backref="shipments")
 
     provider = db.Column(db.String(64), nullable=False)  # dhl, dpd, etc.

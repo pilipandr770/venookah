@@ -7,7 +7,8 @@ from ..extensions import db
 
 class Company(db.Model):
     __tablename__ = "companies"
-    __table_args__ = {'schema': 'venookah2'}
+
+    
 
     id = db.Column(db.Integer, primary_key=True)
 
@@ -19,8 +20,8 @@ class Company(db.Model):
     postal_code = db.Column(db.String(32), nullable=True)
 
     # Verknüpfung zum Benutzer (B2B)
-    user_id = db.Column(db.Integer, db.ForeignKey("venookah2.users.id"), nullable=True)
-    user = db.relationship("User", backref="company")
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    user = db.relationship("User", backref="company", primaryjoin="Company.user_id == User.id")
 
     extra = db.Column(db.JSON, nullable=True)
 
@@ -33,11 +34,11 @@ class Company(db.Model):
 class Contact(db.Model):
     __tablename__ = "contacts"
 
-    __table_args__ = {'schema': 'venookah2'}
+    
 
     id = db.Column(db.Integer, primary_key=True)
 
-    company_id = db.Column(db.Integer, db.ForeignKey("venookah2.companies.id"), nullable=True)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"), nullable=True)
     company = db.relationship("Company", backref="contacts")
 
     name = db.Column(db.String(255), nullable=True)

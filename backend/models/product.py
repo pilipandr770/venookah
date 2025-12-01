@@ -7,14 +7,13 @@ from ..extensions import db
 
 class Category(db.Model):
     __tablename__ = "categories"
-    __table_args__ = {'schema': 'venookah2'}
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     slug = db.Column(db.String(255), unique=True, nullable=False)
     description = db.Column(db.Text)
     image = db.Column(db.String(512))  # URL des Kategorie-Fotos
-    parent_id = db.Column(db.Integer, db.ForeignKey("venookah2.categories.id"), nullable=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True)
 
     parent = db.relationship("Category", remote_side=[id], backref="children")
 
@@ -33,7 +32,6 @@ class Product(db.Model):
     """
 
     __tablename__ = "products"
-    __table_args__ = {'schema': 'venookah2'}
 
     id = db.Column(db.Integer, primary_key=True)
 
@@ -41,7 +39,7 @@ class Product(db.Model):
     slug = db.Column(db.String(255), unique=True, nullable=False)
     description = db.Column(db.Text)
 
-    category_id = db.Column(db.Integer, db.ForeignKey("venookah2.categories.id"), nullable=True)
+    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True)
     category = db.relationship("Category", backref="products")
 
     # Preis für B2C und B2B getrennt

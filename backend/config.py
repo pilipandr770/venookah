@@ -36,9 +36,11 @@ class BaseConfig:
     SQLALCHEMY_DATABASE_URI = _build_sqlalchemy_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Datenbankschema (WICHTIG)
-    # Zum Beispiel: venookah2, auction7, dating_bot, etc.
-    DB_SCHEMA = os.getenv("DB_SCHEMA", "venookah2") if SQLALCHEMY_DATABASE_URI.startswith("postgresql") else None
+def get_table_args():
+    """Return table_args for models - schema only for PostgreSQL."""
+    if _build_sqlalchemy_uri().startswith("postgresql"):
+        return {'schema': os.getenv("DB_SCHEMA", "venookah2")}
+    return {}
 
     # Erzwinge, dass Postgres den gewünschten search_path verwendet
     # (damit alle Tabellen in deinem Schema und nicht in "public" erstellt werden)

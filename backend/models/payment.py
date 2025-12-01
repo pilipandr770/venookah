@@ -7,11 +7,12 @@ from ..extensions import db
 
 class Payment(db.Model):
     __tablename__ = "payments"
-    __table_args__ = {'schema': 'venookah2'}
+
+    
 
     id = db.Column(db.Integer, primary_key=True)
 
-    order_id = db.Column(db.Integer, db.ForeignKey("venookah2.orders.id"), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey("orders.id"), nullable=False)
     order = db.relationship("Order", backref="payments")
 
     provider = db.Column(db.String(64), nullable=False, default="stripe")

@@ -28,7 +28,8 @@ class User(db.Model, UserMixin):
     """
 
     __tablename__ = "users"
-    __table_args__ = {'schema': 'venookah2'}
+
+    
 
     id = db.Column(db.Integer, primary_key=True)
 

@@ -23,9 +23,8 @@ def upgrade():
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['venookah2.users.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    schema='venookah2'
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('cart_items',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -34,56 +33,56 @@ def upgrade():
     sa.Column('quantity', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
-    sa.ForeignKeyConstraint(['cart_id'], ['venookah2.carts.id'], ),
-    sa.ForeignKeyConstraint(['product_id'], ['venookah2.products.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    schema='venookah2'
+    sa.ForeignKeyConstraint(['cart_id'], ['carts.id'], ),
+    sa.ForeignKeyConstraint(['product_id'], ['products.id'], ),
+    sa.PrimaryKeyConstraint('id')
     )
-    with op.batch_alter_table('audit_logs', schema=None) as batch_op:
-        batch_op.drop_constraint('audit_logs_user_id_fkey', type_='foreignkey')
-        batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'], referent_schema='venookah2')
+    # Foreign keys are already defined in the models for SQLite
+    # with op.batch_alter_table('audit_logs', schema=None) as batch_op:
+    #     batch_op.drop_constraint('audit_logs_user_id_fkey', type_='foreignkey')
+    #     batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'])
 
-    with op.batch_alter_table('b2b_check_results', schema=None) as batch_op:
-        batch_op.drop_constraint('b2b_check_results_user_id_fkey', type_='foreignkey')
-        batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'], referent_schema='venookah2')
+    # with op.batch_alter_table('b2b_check_results', schema=None) as batch_op:
+    #     batch_op.drop_constraint('b2b_check_results_user_id_fkey', type_='foreignkey')
+    #     batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'])
 
-    with op.batch_alter_table('categories', schema=None) as batch_op:
-        batch_op.drop_constraint('categories_parent_id_fkey', type_='foreignkey')
-        batch_op.create_foreign_key(None, 'categories', ['parent_id'], ['id'], referent_schema='venookah2')
+    # with op.batch_alter_table('categories', schema=None) as batch_op:
+    #     batch_op.drop_constraint('categories_parent_id_fkey', type_='foreignkey')
+    #     batch_op.create_foreign_key(None, 'categories', ['parent_id'], ['id'])
 
-    with op.batch_alter_table('companies', schema=None) as batch_op:
-        batch_op.drop_constraint('companies_user_id_fkey', type_='foreignkey')
-        batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'], referent_schema='venookah2')
+    # with op.batch_alter_table('companies', schema=None) as batch_op:
+    #     batch_op.drop_constraint('companies_user_id_fkey', type_='foreignkey')
+    #     batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'])
 
-    with op.batch_alter_table('contacts', schema=None) as batch_op:
-        batch_op.drop_constraint('contacts_company_id_fkey', type_='foreignkey')
-        batch_op.create_foreign_key(None, 'companies', ['company_id'], ['id'], referent_schema='venookah2')
+    # with op.batch_alter_table('contacts', schema=None) as batch_op:
+    #     batch_op.drop_constraint('contacts_company_id_fkey', type_='foreignkey')
+    #     batch_op.create_foreign_key(None, 'companies', ['company_id'], ['id'])
 
-    with op.batch_alter_table('order_items', schema=None) as batch_op:
-        batch_op.drop_constraint('order_items_order_id_fkey', type_='foreignkey')
-        batch_op.drop_constraint('order_items_product_id_fkey', type_='foreignkey')
-        batch_op.create_foreign_key(None, 'products', ['product_id'], ['id'], referent_schema='venookah2')
-        batch_op.create_foreign_key(None, 'orders', ['order_id'], ['id'], referent_schema='venookah2')
+    # with op.batch_alter_table('order_items', schema=None) as batch_op:
+    #     batch_op.drop_constraint('order_items_order_id_fkey', type_='foreignkey')
+    #     batch_op.drop_constraint('order_items_product_id_fkey', type_='foreignkey')
+    #     batch_op.create_foreign_key(None, 'products', ['product_id'], ['id'])
+    #     batch_op.create_foreign_key(None, 'orders', ['order_id'], ['id'])
 
-    with op.batch_alter_table('orders', schema=None) as batch_op:
-        batch_op.drop_constraint('orders_user_id_fkey', type_='foreignkey')
-        batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'], referent_schema='venookah2')
+    # with op.batch_alter_table('orders', schema=None) as batch_op:
+    #     batch_op.drop_constraint('orders_user_id_fkey', type_='foreignkey')
+    #     batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'])
 
-    with op.batch_alter_table('payments', schema=None) as batch_op:
-        batch_op.drop_constraint('payments_order_id_fkey', type_='foreignkey')
-        batch_op.create_foreign_key(None, 'orders', ['order_id'], ['id'], referent_schema='venookah2')
+    # with op.batch_alter_table('payments', schema=None) as batch_op:
+    #     batch_op.drop_constraint('payments_order_id_fkey', type_='foreignkey')
+    #     batch_op.create_foreign_key(None, 'orders', ['order_id'], ['id'])
 
-    with op.batch_alter_table('products', schema=None) as batch_op:
-        batch_op.drop_constraint('products_category_id_fkey', type_='foreignkey')
-        batch_op.create_foreign_key(None, 'categories', ['category_id'], ['id'], referent_schema='venookah2')
+    # with op.batch_alter_table('products', schema=None) as batch_op:
+    #     batch_op.drop_constraint('products_category_id_fkey', type_='foreignkey')
+    #     batch_op.create_foreign_key(None, 'categories', ['category_id'], ['id'])
 
-    with op.batch_alter_table('shipments', schema=None) as batch_op:
-        batch_op.drop_constraint('shipments_order_id_fkey', type_='foreignkey')
-        batch_op.create_foreign_key(None, 'orders', ['order_id'], ['id'], referent_schema='venookah2')
+    # with op.batch_alter_table('shipments', schema=None) as batch_op:
+    #     batch_op.drop_constraint('shipments_order_id_fkey', type_='foreignkey')
+    #     batch_op.create_foreign_key(None, 'orders', ['order_id'], ['id'])
 
-    with op.batch_alter_table('stock_items', schema=None) as batch_op:
-        batch_op.drop_constraint('stock_items_product_id_fkey', type_='foreignkey')
-        batch_op.create_foreign_key(None, 'products', ['product_id'], ['id'], referent_schema='venookah2')
+    # with op.batch_alter_table('stock_items', schema=None) as batch_op:
+    #     batch_op.drop_constraint('stock_items_product_id_fkey', type_='foreignkey')
+    #     batch_op.create_foreign_key(None, 'products', ['product_id'], ['id'])
 
     # ### end Alembic commands ###
 

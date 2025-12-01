@@ -12,7 +12,7 @@ class Container(db.Model):
 
     __tablename__ = "containers"
 
-    __table_args__ = {'schema': 'venookah2'}
+    
 
     id = db.Column(db.Integer, primary_key=True)
 
